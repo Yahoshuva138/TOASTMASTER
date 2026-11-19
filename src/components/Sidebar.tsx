@@ -24,6 +24,7 @@ interface SidebarProps {
   onNavigate: (page: string) => void;
   currentUser: Profile;
   pendingReviewCount: number;
+  pendingMembersCount?: number;
   isOpen?: boolean;
   onClose?: () => void;
 }
@@ -33,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   currentUser,
   pendingReviewCount,
+  pendingMembersCount = 0,
   isOpen = false,
   onClose
 }) => {
@@ -56,7 +58,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const adminNav = [
-    { id: 'members', label: 'Club Members', icon: Users, officerOnly: true },
+    { 
+      id: 'members', 
+      label: 'Club Members', 
+      icon: Users, 
+      officerOnly: true,
+      badge: (isSuperAdmin && pendingMembersCount > 0) ? `${pendingMembersCount} New` : undefined,
+      badgeColor: 'bg-amber-500 text-white animate-pulse'
+    },
     { id: 'roles-permissions', label: 'Roles & RBAC', icon: ShieldCheck, adminOnly: true },
     { id: 'reports', label: 'Reports & Export', icon: BarChart3 },
     { id: 'activity-log', label: 'Audit Activity Log', icon: History },

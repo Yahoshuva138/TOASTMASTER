@@ -20,6 +20,7 @@ interface DashboardProps {
   departments: Department[];
   currentUser: Profile;
   activityLogs: ActivityLogItem[];
+  pendingMembersCount?: number;
   onNavigate: (page: string) => void;
   onSelectTask: (task: Task) => void;
   onCreateTaskClick: () => void;
@@ -30,6 +31,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   departments,
   currentUser,
   activityLogs,
+  pendingMembersCount = 0,
   onNavigate,
   onSelectTask,
   onCreateTaskClick
@@ -52,6 +54,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-6">
       
+      {/* Super Admin Alert: Pending Member Access Requests */}
+      {currentUser.systemRole === 'super_admin' && pendingMembersCount > 0 && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-start sm:items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center flex-shrink-0 text-amber-700">
+              <Clock className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-brand font-black text-sm text-amber-950">
+                  {pendingMembersCount} Pending Member Access Request{pendingMembersCount > 1 ? 's' : ''}
+                </span>
+                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                  Action Required
+                </span>
+              </div>
+              <p className="text-xs text-amber-800 mt-0.5">
+                New user(s) requested access from the login portal. Assign their club role and department to grant entry.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('members')}
+            className="w-full sm:w-auto px-4 py-2 bg-[#772432] hover:bg-[#5A1A25] text-white font-brand font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center space-x-1.5 flex-shrink-0"
+          >
+            <span>Review & Grant Access →</span>
+          </button>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-[#004165] to-[#002B44] text-white p-6 rounded-2xl shadow-sm border border-[#002B44] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start space-x-4">

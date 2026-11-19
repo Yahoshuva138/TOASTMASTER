@@ -598,6 +598,7 @@ export default function App() {
   }
 
   const pendingReviewCount = tasks.filter(t => t.status === 'submitted_for_review').length;
+  const pendingMembersCount = members.filter(m => m.accessStatus === 'pending').length;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
@@ -625,6 +626,7 @@ export default function App() {
           onNavigate={handleNavigate}
           currentUser={currentUser}
           pendingReviewCount={pendingReviewCount}
+          pendingMembersCount={pendingMembersCount}
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         />
@@ -637,7 +639,8 @@ export default function App() {
               departments={departments}
               currentUser={currentUser}
               activityLogs={activityLogs}
-              onNavigate={setCurrentPage}
+              pendingMembersCount={pendingMembersCount}
+              onNavigate={handleNavigate}
               onSelectTask={setSelectedTask}
               onCreateTaskClick={() => setIsCreateTaskOpen(true)}
             />
