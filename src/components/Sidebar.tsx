@@ -111,10 +111,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="min-w-0 flex-1">
             <span className="font-bold text-[#004165] block truncate">SpeakUp Scaler TM</span>
-            <p className="text-[11px] text-slate-500 truncate">Club #2867 • Dist. 120</p>
+            <p className="text-[11px] text-slate-800 font-bold truncate">Club #28681022</p>
+            <p className="text-[10px] text-slate-500 font-medium truncate">District 227 • Div E • Area 04</p>
             <div className="mt-1 text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>100% Proof Verified</span>
+              <span>100% Evidence Verified</span>
             </div>
           </div>
         </div>

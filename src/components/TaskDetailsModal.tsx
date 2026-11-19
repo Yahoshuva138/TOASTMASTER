@@ -12,6 +12,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { Task, Profile } from '../types/database.types';
+import { formatDueDateTime } from '../lib/dateUtils';
 
 interface TaskDetailsModalProps {
   task: Task | null;
@@ -92,8 +93,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               <span className="font-bold text-slate-800 truncate block">{task.assignedMemberName}</span>
             </div>
             <div>
-              <span className="text-slate-400 block font-semibold">Due Date</span>
-              <span className="font-bold text-slate-800">{task.dueDate || 'Flexible'}</span>
+              <span className="text-slate-400 block font-semibold">Due Date & Time</span>
+              <span className="font-bold text-slate-800">{formatDueDateTime(task.dueDate)}</span>
             </div>
           </div>
 

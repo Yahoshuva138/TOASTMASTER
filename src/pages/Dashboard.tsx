@@ -13,6 +13,7 @@ import {
   Paperclip
 } from 'lucide-react';
 import { Task, Profile, Department, ActivityLogItem } from '../types/database.types';
+import { formatDueDateTime, isTaskOverdue } from '../lib/dateUtils';
 
 interface DashboardProps {
   tasks: Task[];
@@ -40,8 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const awaitingReview = tasks.filter(t => t.status === 'submitted_for_review').length;
   const approved = tasks.filter(t => t.status === 'approved').length;
   
-  const today = new Date().toISOString().split('T')[0];
-  const overdue = tasks.filter(t => t.dueDate && t.dueDate < today && t.status !== 'approved').length;
+  const overdue = tasks.filter(t => isTaskOverdue(t.dueDate, t.status)).length;
   const completionPercentage = totalTasks > 0 ? Math.round((approved / totalTasks) * 100) : 0;
 
   const myTasks = tasks.filter(t => t.assignedMemberId === currentUser.id);
@@ -261,7 +261,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     <div className="text-right flex-shrink-0">
                       <span className="text-xs font-semibold text-slate-700 block">{t.assignedMemberName}</span>
-                      <span className="text-[10px] text-slate-400">Due: {t.dueDate || 'Flexible'}</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Due: {formatDueDateTime(t.dueDate)}</span>
                     </div>
                   </div>
                 ))

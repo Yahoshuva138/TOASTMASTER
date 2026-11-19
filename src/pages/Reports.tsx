@@ -1,6 +1,7 @@
 import React from 'react';
 import { BarChart3, Download, TrendingUp, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { Task, Department, Profile } from '../types/database.types';
+import { isTaskOverdue } from '../lib/dateUtils';
 
 interface ReportsProps {
   tasks: Task[];
@@ -17,8 +18,7 @@ export const Reports: React.FC<ReportsProps> = ({
   const approvedTasks = tasks.filter(t => t.status === 'approved').length;
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
   const inReviewTasks = tasks.filter(t => t.status === 'submitted_for_review').length;
-  const today = new Date().toISOString().split('T')[0];
-  const overdueTasks = tasks.filter(t => t.dueDate && t.dueDate < today && t.status !== 'approved').length;
+  const overdueTasks = tasks.filter(t => isTaskOverdue(t.dueDate, t.status)).length;
 
   // Export to CSV Function
   const handleExportCSV = () => {

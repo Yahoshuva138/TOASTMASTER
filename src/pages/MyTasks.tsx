@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Clock, Paperclip, AlertCircle, Plus } from 'lucide-react';
 import { Task, Profile } from '../types/database.types';
+import { formatDueDateTime } from '../lib/dateUtils';
 
 interface MyTasksProps {
   tasks: Task[];
@@ -91,7 +92,7 @@ export const MyTasks: React.FC<MyTasksProps> = ({
                 )}
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Due: {t.dueDate || 'Flexible'}</span>
+                  <span className="text-xs text-slate-500 font-medium">Due: {formatDueDateTime(t.dueDate)}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

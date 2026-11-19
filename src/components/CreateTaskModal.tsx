@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckSquare, AlertCircle } from 'lucide-react';
+import { X, CheckSquare, AlertCircle, Calendar, Clock } from 'lucide-react';
 import { Department, Profile, TaskPriority, Task } from '../types/database.types';
 
 interface CreateTaskModalProps {
@@ -28,6 +28,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   const [assignedOfficerId, setAssignedOfficerId] = useState(currentUser.id);
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('18:00');
   const [acceptanceCriteria, setAcceptanceCriteria] = useState('');
   const [proofRequired, setProofRequired] = useState(true);
   const [meetingName, setMeetingName] = useState('Meeting 6 (Upcoming)');
@@ -62,7 +63,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       priority,
       status: 'not_started',
       startDate: new Date().toISOString().split('T')[0],
-      dueDate: dueDate || undefined,
+      dueDate: dueDate ? (dueTime ? `${dueDate}T${dueTime}` : dueDate) : undefined,
       acceptanceCriteria: acceptanceCriteria.trim(),
       proofRequired,
       additionalInstructions: additionalInstructions.trim(),
@@ -156,15 +157,35 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Due Date</label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#004165] focus:outline-none"
-              >
-              </input>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Due Date & Time
+              </label>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="col-span-3 relative">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={e => setDueDate(e.target.value)}
+                    className="w-full pl-8 pr-2 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                    placeholder="Select Date"
+                  />
+                </div>
+                <div className="col-span-2 relative">
+                  <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={dueTime}
+                    onChange={e => setDueTime(e.target.value)}
+                    className="w-full pl-8 pr-2 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#004165] focus:outline-none font-medium"
+                    title="Deadline Time"
+                  />
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 block">
+                Select completion date and specific meeting cutoff time
+              </span>
             </div>
           </div>
 

@@ -335,7 +335,11 @@ export const RoleResources: React.FC = () => {
               key={res.id}
               className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:border-[#004165] transition group"
             >
-              <div className="p-5 space-y-3">
+              {/* Card Body (Clickable to preview) */}
+              <div 
+                onClick={() => setPreviewItem(res)}
+                className="p-5 space-y-3 cursor-pointer flex-1"
+              >
                 {/* Badges */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold bg-[#772432] text-[#F2DF74] px-2 py-0.5 rounded border border-[#932C3E]">
@@ -363,34 +367,169 @@ export const RoleResources: React.FC = () => {
                 </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              {/* Action Buttons: Primary View in Website, Secondary Download */}
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button
+                  onClick={() => setPreviewItem(res)}
+                  className="flex-1 py-2 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center space-x-1.5"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#F2DF74]" />
+                  <span>View in Website</span>
+                </button>
+
                 <a
                   href={res.path}
                   download
-                  className="px-3 py-1.5 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center space-x-1.5"
+                  onClick={e => e.stopPropagation()}
+                  className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center space-x-1"
+                  title="Download copy if needed"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#F2DF74]" />
-                  <span>Download</span>
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="hidden sm:inline">Download</span>
                 </a>
-
-                {(res.fileType === 'PDF' || res.fileType === 'PNG') && (
-                  <a
-                    href={res.path}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center space-x-1"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Open Guide</span>
-                  </a>
-                )}
               </div>
             </div>
           ))
         )}
       </div>
 
+      {/* IN-WEBSITE INTERACTIVE DOCUMENT & TOOLKIT VIEWER MODAL */}
+      {previewItem && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
+            
+            {/* Viewer Header */}
+            <div className="px-6 py-4 bg-[#004165] text-white flex items-center justify-between border-b border-[#002B44] flex-shrink-0">
+              <div className="flex items-center space-x-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md flex-shrink-0">
+                  <img src="/toastmasters-logo.svg" alt="Toastmasters" className="w-full h-full object-contain" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] font-bold bg-[#772432] text-[#F2DF74] px-2 py-0.5 rounded border border-[#932C3E]">
+                      {previewItem.role}
+                    </span>
+                    <span className="text-xs text-slate-300 font-semibold">{previewItem.fileType} • {previewItem.fileSize}</span>
+                  </div>
+                  <h2 className="text-base sm:text-lg font-bold text-white mt-0.5 truncate">{previewItem.title}</h2>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 flex-shrink-0 ml-3">
+                {/* Download Button (If needed) */}
+                <a
+                  href={previewItem.path}
+                  download
+                  className="px-3.5 py-1.5 bg-[#F2DF74] hover:bg-yellow-300 text-[#004165] text-xs font-bold rounded-lg shadow-sm transition flex items-center space-x-1.5"
+                  title="Download Copy"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Download</span>
+                </a>
+
+                {/* Open in new tab */}
+                <a
+                  href={previewItem.path}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
+                  title="Open in new window"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setPreviewItem(null)}
+                  className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition ml-1"
+                  title="Close viewer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Viewer Body */}
+            <div className="flex-1 bg-slate-100 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-[460px]">
+              {previewItem.fileType === 'PDF' ? (
+                <div className="w-full h-[680px] bg-white rounded-2xl shadow-inner border border-slate-300 overflow-hidden">
+                  <iframe
+                    src={`${previewItem.path}#toolbar=1&navpanes=1`}
+                    className="w-full h-full border-0"
+                    title={previewItem.title}
+                  />
+                </div>
+              ) : previewItem.fileType === 'PNG' || previewItem.fileType === 'SVG' ? (
+                <div className="max-w-3xl w-full bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center space-y-4">
+                  <div className="max-h-[540px] overflow-auto flex items-center justify-center bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <img
+                      src={previewItem.path}
+                      alt={previewItem.title}
+                      className="max-h-[500px] w-auto object-contain mx-auto rounded-lg shadow-sm"
+                    />
+                  </div>
+                  <div className="text-left text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-slate-800 block mb-1">Official Resource Notes:</span>
+                    <p>{previewItem.description}</p>
+                  </div>
+                </div>
+              ) : (
+                /* ZIP Archive Suite Viewer */
+                <div className="max-w-xl w-full bg-white p-8 rounded-2xl shadow-lg border border-slate-200 space-y-6 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-50 border-2 border-purple-200 text-purple-700 mx-auto flex items-center justify-center">
+                    <FolderArchive className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase text-purple-700 tracking-wider">Archived Vector & Asset Bundle</span>
+                    <h3 className="text-xl font-bold text-slate-900 mt-1">{previewItem.title}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{previewItem.subtitle}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-left text-xs space-y-2">
+                    <span className="font-bold text-slate-800 block">Package Contents & Usage:</span>
+                    <p className="text-slate-600">{previewItem.description}</p>
+                    <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-slate-500 font-mono text-[11px]">
+                      <span>Format: Compressed ZIP Suite</span>
+                      <span>File Size: {previewItem.fileSize}</span>
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <a
+                      href={previewItem.path}
+                      download
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition"
+                    >
+                      <Download className="w-4 h-4 text-[#F2DF74]" />
+                      <span>Download {previewItem.title} ({previewItem.fileSize})</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Viewer Footer */}
+            <div className="px-6 py-3 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 flex-shrink-0">
+              <span className="italic">SpeakUp Scaler Toastmasters Club #28681022 • District 227</span>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setPreviewItem(null)}
+                  className="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 transition"
+                >
+                  Close Viewer
+                </button>
+                <a
+                  href={previewItem.path}
+                  download
+                  className="px-4 py-1.5 bg-[#004165] text-white text-xs font-bold rounded-lg hover:bg-[#002B44] transition flex items-center space-x-1"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#F2DF74]" />
+                  <span>Download File</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -13,6 +13,7 @@ import {
   ExternalLink 
 } from 'lucide-react';
 import { Task, Department, Profile, ViewMode, TaskStatus, TaskPriority } from '../types/database.types';
+import { formatDueDateTime } from '../lib/dateUtils';
 
 interface AllTasksProps {
   tasks: Task[];
@@ -240,7 +241,7 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                           <span className="font-semibold text-slate-600 truncate max-w-[120px]">
                             {t.assignedMemberName}
                           </span>
-                          <span>{t.dueDate || 'Flexible'}</span>
+                          <span className="font-medium text-slate-500">{formatDueDateTime(t.dueDate)}</span>
                         </div>
                       </div>
                     ))
@@ -311,7 +312,7 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                           <span className="text-slate-400">Pending</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{t.dueDate || 'Flexible'}</td>
+                      <td className="px-4 py-3 text-slate-500 font-medium">{formatDueDateTime(t.dueDate)}</td>
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={(e) => {
@@ -347,9 +348,9 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                   className="p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-between cursor-pointer transition"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-[#004165] text-white rounded-xl text-center min-w-[70px]">
-                      <span className="text-[10px] uppercase font-bold block">Target</span>
-                      <span className="text-xs font-black">{t.dueDate}</span>
+                    <div className="p-3 bg-[#004165] text-white rounded-xl text-center min-w-[90px]">
+                      <span className="text-[10px] uppercase font-bold block text-[#F2DF74]">Target</span>
+                      <span className="text-xs font-black">{formatDueDateTime(t.dueDate)}</span>
                     </div>
                     <div>
                       <span className="text-xs font-bold text-slate-900 block">{t.taskCode}: {t.title}</span>
