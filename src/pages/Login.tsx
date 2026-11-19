@@ -5,12 +5,11 @@ import {
   Lock, 
   AlertCircle, 
   ArrowRight, 
-  X, 
   Clock, 
   UserCheck, 
-  UserPlus, 
   CheckCircle2, 
-  RefreshCw 
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { Profile } from '../types/database.types';
 
@@ -25,12 +24,11 @@ export const Login: React.FC<LoginProps> = ({
   onRequestAccess,
   members
 }) => {
-  const [email, setEmail] = useState('');
+  const [activeTab, setActiveTab] = useState<'google' | 'pin'>('google');
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [pinEmail, setPinEmail] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
-  const [customGoogleName, setCustomGoogleName] = useState('');
   const [pendingUser, setPendingUser] = useState<Profile | null>(null);
 
   // Check if an email belongs to Super Admin
@@ -49,11 +47,11 @@ export const Login: React.FC<LoginProps> = ({
     const cleanEmail = inputEmail.toLowerCase().trim();
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Please enter a valid email address.');
+      setError('Please enter a valid Google or club email address.');
       return;
     }
 
-    // 1. Super Admin instant access
+    // 1. Super Admin instant verified access
     if (isSuperAdminEmail(cleanEmail)) {
       const superAdminProfile: Profile = {
         id: 'user-yahoshuva',
@@ -69,7 +67,6 @@ export const Login: React.FC<LoginProps> = ({
         createdAt: '2026-10-01T10:00:00Z',
         updatedAt: new Date().toISOString()
       };
-      setShowGoogleModal(false);
       onLoginSuccess(superAdminProfile);
       return;
     }
@@ -79,12 +76,10 @@ export const Login: React.FC<LoginProps> = ({
 
     if (matched) {
       if (matched.accessStatus === 'approved' || (matched.isActive && matched.accessStatus !== 'pending')) {
-        // Access has been granted by Super Admin with assigned role!
-        setShowGoogleModal(false);
+        // Access has been granted by Super Admin with assigned role
         onLoginSuccess(matched);
       } else {
         // Registered but still pending approval
-        setShowGoogleModal(false);
         setPendingUser(matched);
       }
     } else {
@@ -104,7 +99,6 @@ export const Login: React.FC<LoginProps> = ({
       };
 
       onRequestAccess(newPendingProfile);
-      setShowGoogleModal(false);
       setPendingUser(newPendingProfile);
     }
   };
@@ -124,8 +118,14 @@ export const Login: React.FC<LoginProps> = ({
       setPendingUser(null);
       onLoginSuccess(matched);
     } else {
-      setError('Your access request is still pending Super Admin review. Please contact TM Yahoshuva Kesaboyina.');
+      setError('Your access request is awaiting Super Admin approval. Please contact TM Yahoshuva Kesaboyina.');
     }
+  };
+
+  // Google Login form submit
+  const handleGoogleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    authenticateEmail(googleEmail);
   };
 
   // Direct Email & PIN Login form handler
@@ -135,53 +135,70 @@ export const Login: React.FC<LoginProps> = ({
       setError('Incorrect PIN. (Default member PIN: 1234)');
       return;
     }
-    authenticateEmail(email);
+    authenticateEmail(pinEmail);
   };
 
-  // Prominent pre-authorized accounts for one-click testing
-  const quickAccounts = [
-    {
-      name: 'TM Yahoshuva Kesaboyina',
-      email: 'yahoshuva.kesaboyina@scaler.com',
-      role: '🛡️ Super Admin',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
-    },
-    {
-      name: 'TM Arunima Vats',
-      email: 'arunima.vats@scaler.com',
-      role: '👑 Club President',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80'
-    },
-    {
-      name: 'TM Shakthi Sivapriya',
-      email: 'shakthi.sivapriya@scaler.com',
-      role: 'VP Education',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80'
-    },
-    {
-      name: 'TM Ashish Patel',
-      email: 'ashish.patel@scaler.com',
-      role: 'Sergeant at Arms',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80'
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004165] via-[#002B44] to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#004165] via-[#002B44] to-slate-900 flex flex-col items-center justify-center p-4">
+      
+      {/* Brand & Portal Header */}
+      <div className="text-center mb-6 max-w-md w-full animate-in fade-in">
+        <div className="w-20 h-20 rounded-2xl bg-white p-2.5 mx-auto flex items-center justify-center shadow-2xl mb-4 border-2 border-[#F2DF74]">
+          <img 
+            src="/toastmasters-logo.svg" 
+            alt="Toastmasters International Emblem" 
+            className="w-full h-full object-contain" 
+          />
+        </div>
+        <h1 className="text-2xl font-black tracking-wide text-white uppercase drop-shadow-sm">
+          TOASTMASTERS TASK HUB
+        </h1>
+        <p className="text-sm font-semibold text-[#F2DF74] mt-0.5">
+          SpeakUp Scaler Toastmasters Club
+        </p>
+        <p className="text-xs text-slate-300 font-medium">
+          Club #28681022 • District 227 • Division E • Area 04
+        </p>
+        <p className="text-[11px] text-slate-400 mt-1 italic">
+          Where Leaders Are Made • Learn • Speak • Lead
+        </p>
+      </div>
+
+      {/* Main Login Card */}
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
         
-        {/* Brand Header */}
-        <div className="bg-[#004165] p-8 text-center text-white relative">
-          <div className="w-20 h-20 rounded-2xl bg-white p-2.5 mx-auto flex items-center justify-center shadow-2xl mb-3 border-2 border-[#F2DF74]">
-            <img 
-              src="/toastmasters-logo.svg" 
-              alt="Toastmasters International Logo" 
-              className="w-full h-full object-contain" 
-            />
-          </div>
-          <h1 className="text-xl font-black tracking-wide uppercase text-white">TOASTMASTERS TASK HUB</h1>
-          <p className="text-xs text-slate-300 mt-1 font-medium">SpeakUp Scaler Toastmasters Club</p>
-          <p className="text-[11px] text-[#F2DF74] mt-0.5 font-semibold">Learn • Speak • Lead</p>
+        {/* Navigation Tabs: Google Sign-In vs PIN */}
+        <div className="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => { setActiveTab('google'); setError(''); }}
+            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-2 ${
+              activeTab === 'google'
+                ? 'bg-white text-[#004165] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+            <span>Google Login</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setActiveTab('pin'); setError(''); }}
+            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-2 ${
+              activeTab === 'pin'
+                ? 'bg-white text-[#004165] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Lock className="w-3.5 h-3.5 text-[#772432]" />
+            <span>Email & PIN</span>
+          </button>
         </div>
 
         {/* Content Body */}
@@ -202,7 +219,7 @@ export const Login: React.FC<LoginProps> = ({
               </div>
 
               <div>
-                <span className="text-xs font-bold uppercase text-amber-800 tracking-wider block">Access Status</span>
+                <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider block">Access Status</span>
                 <h3 className="text-lg font-bold text-slate-900 mt-0.5">Approval & Role Assignment Required</h3>
                 <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                   Your email <span className="font-bold text-slate-900">{pendingUser.email}</span> is registered in the queue.
@@ -227,6 +244,7 @@ export const Login: React.FC<LoginProps> = ({
 
               <div className="space-y-2 pt-2">
                 <button
+                  type="button"
                   onClick={handleCheckStatus}
                   className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2"
                 >
@@ -235,6 +253,7 @@ export const Login: React.FC<LoginProps> = ({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setPendingUser(null);
                     setError('');
@@ -245,173 +264,120 @@ export const Login: React.FC<LoginProps> = ({
                 </button>
               </div>
             </div>
-          ) : (
-            /* VIEW: Standard Sign In Form */
-            <>
-              {/* Continue with Google Button */}
+          ) : activeTab === 'google' ? (
+            /* TAB 1: Google OAuth Form */
+            <form onSubmit={handleGoogleSubmit} className="space-y-4">
               <div>
-                <button
-                  onClick={() => setShowGoogleModal(true)}
-                  className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 shadow-sm transition flex items-center justify-center space-x-3 group"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                  </svg>
-                  <span>Sign in with Google</span>
-                </button>
-
-                <div className="mt-2 text-[10px] text-center text-slate-500">
-                  Enter any Google / Scaler email. Roles are granted and managed by the Super Admin.
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Google / Scaler Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. name@scaler.com or personal @gmail.com"
+                    value={googleEmail}
+                    onChange={e => setGoogleEmail(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                  />
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="relative flex items-center justify-center">
-                <div className="border-t border-slate-200 w-full"></div>
-                <span className="bg-white px-3 text-[10px] font-bold uppercase text-slate-400 absolute">
-                  Or Sign In with Email & PIN
-                </span>
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2 group"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>Continue with Google</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#F2DF74]" />
+              </button>
+
+              {/* 1-Click Fast Access for Yahoshuva */}
+              <div className="pt-2 border-t border-slate-100 text-center">
+                <span className="text-[10px] text-slate-400 block mb-1.5 font-semibold">Super Admin Quick Access</span>
+                <button
+                  type="button"
+                  onClick={() => authenticateEmail('yahoshuva.kesaboyina@scaler.com')}
+                  className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
+                    <span>TM Yahoshuva Kesaboyina</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#772432] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Super Admin
+                  </span>
+                </button>
               </div>
 
-              {/* Direct Email & PIN Form */}
-              <form onSubmit={handleEmailPinLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. yourname@gmail.com or @scaler.com"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                    />
-                  </div>
+              <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+                Public Google authentication active. New accounts receive member access upon Super Admin verification.
+              </p>
+            </form>
+          ) : (
+            /* TAB 2: Email & PIN Form */
+            <form onSubmit={handleEmailPinLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Club Email</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. name@scaler.com or gmail.com"
+                    value={pinEmail}
+                    onChange={e => setPinEmail(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                  />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Member PIN</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                    <input
-                      type="password"
-                      required
-                      placeholder="Enter 4-digit PIN (default: 1234)"
-                      value={pin}
-                      onChange={e => setPin(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                    />
-                  </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Member Security PIN</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter 4-digit PIN (default: 1234)"
+                    value={pin}
+                    onChange={e => setPin(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                  />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2"
-                >
-                  <span>Enter Toastmasters Hub</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#F2DF74]" />
-                </button>
-              </form>
-            </>
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2"
+              >
+                <span>Enter Toastmasters Hub</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#F2DF74]" />
+              </button>
+
+              <p className="text-[11px] text-slate-500 text-center">
+                Default officer & member access PIN: <code className="font-mono text-[#004165] font-bold">1234</code>
+              </p>
+            </form>
           )}
 
         </div>
 
       </div>
 
-      {/* IN-APP GOOGLE ACCOUNT SELECTOR MODAL (Replaces browser window.prompt completely) */}
-      {showGoogleModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
-            
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <img src="/toastmasters-logo.svg" alt="Toastmasters" className="w-6 h-6 object-contain" />
-                <span className="font-bold text-sm text-slate-800">Toastmasters Member Sign-In</span>
-              </div>
-              <button 
-                onClick={() => setShowGoogleModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5">
-              <p className="text-xs text-slate-600">
-                Choose a recognized Toastmasters officer account or type any Google email:
-              </p>
-
-              {/* Quick Officer Accounts */}
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Authorized Officer Accounts</span>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-                  {quickAccounts.map(acc => (
-                    <div
-                      key={acc.email}
-                      onClick={() => authenticateEmail(acc.email, acc.name)}
-                      className="p-2.5 flex items-center justify-between hover:bg-slate-100 transition cursor-pointer"
-                    >
-                      <div className="flex items-center space-x-2.5">
-                        <img src={acc.avatar} alt={acc.name} className="w-7 h-7 rounded-full object-cover border border-[#F2DF74]" />
-                        <div>
-                          <span className="font-bold text-xs text-slate-900 block leading-tight">{acc.name}</span>
-                          <span className="text-[10px] text-slate-500 leading-tight">{acc.email}</span>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#772432] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                        {acc.role}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Enter ANY Custom Email Form */}
-              <div className="pt-2 border-t border-slate-100 space-y-3">
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Or Enter Any Email Address</span>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email (Google / Scaler)</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. newmember@gmail.com or colleague@scaler.com"
-                    value={customGoogleEmail}
-                    onChange={e => setCustomGoogleEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Your Name (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. John Doe"
-                    value={customGoogleName}
-                    onChange={e => setCustomGoogleName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => authenticateEmail(customGoogleEmail, customGoogleName)}
-                  className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-sm transition"
-                >
-                  Continue with this Account →
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* Security & Bylaws Notice */}
+      <div className="mt-6 text-center text-slate-400 text-xs max-w-sm">
+        <p>Protected by PostgreSQL Row Level Security & RBAC governance.</p>
+        <p className="text-[10px] text-slate-500 mt-1">
+          SpeakUp Scaler Toastmasters Club • Official Platform
+        </p>
+      </div>
 
     </div>
   );

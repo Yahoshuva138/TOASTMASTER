@@ -18,7 +18,8 @@ import {
   TaskTemplate,
   TaskEvidence,
   ReviewAction,
-  UserSystemRole
+  UserSystemRole,
+  TaskStatus
 } from './types/database.types';
 
 // Layout & Core Components
@@ -46,13 +47,13 @@ import { UserProfile } from './pages/UserProfile';
 import { RoleResources } from './pages/RoleResources';
 
 export default function App() {
-  // Session & Auth State: Start with Yahoshuva as default logged in Super Admin
+  // Session & Auth State: NO auto-login by default! Show main login page on first load
   const [currentUser, setCurrentUser] = useState<Profile | null>(() => {
     const saved = localStorage.getItem('tm_hub_user');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return INITIAL_PROFILES[0]; // TM Yahoshuva Kesaboyina (Super Admin)
+    return null; // Start at the main login portal
   });
 
   // Database Entities
@@ -272,6 +273,56 @@ export default function App() {
         createdAt: new Date().toISOString()
       };
       setNotifications(prev => [notif, ...prev]);
+    }
+  };
+
+  // Live Task Deletion Handler
+  const handleDeleteTask = (taskId: string) => {
+    const target = tasks.find(t => t.id === taskId);
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    if (selectedTask?.id === taskId) {
+      setSelectedTask(null);
+    }
+
+    if (target) {
+      const log: ActivityLogItem = {
+        id: 'act-' + Date.now(),
+        userName: currentUser?.fullName || 'User',
+        userRole: currentUser?.clubRole || 'Member',
+        action: 'TASK_DELETED',
+        entityType: 'task',
+        entityId: taskId,
+        details: { taskCode: target.taskCode, title: target.title },
+        createdAt: new Date().toISOString()
+      };
+      setActivityLogs(prev => [log, ...prev]);
+    }
+  };
+
+  // Live Task Status Update Handler
+  const handleUpdateTaskStatus = (taskId: string, newStatus: TaskStatus) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return t;
+    }));
+
+    if (selectedTask?.id === taskId) {
+      setSelectedTask(prev => prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : null);
+    }
+  };
+
+  // Reset to Clean Real Data (Wipe sample tasks)
+  const handleClearAllSampleTasks = () => {
+    if (confirm('Clear all sample tasks? You can create real club tasks anytime.')) {
+      setTasks([]);
+      localStorage.setItem('tm_hub_tasks', JSON.stringify([]));
+      setSelectedTask(null);
     }
   };
 
@@ -588,6 +639,8 @@ export default function App() {
               onSelectTask={setSelectedTask}
               onCreateTaskClick={() => setIsCreateTaskOpen(true)}
               onSubmitEvidenceClick={setEvidenceTask}
+              onDeleteTask={handleDeleteTask}
+              onClearAllSampleTasks={handleClearAllSampleTasks}
             />
           )}
 
@@ -717,6 +770,8 @@ export default function App() {
           setCurrentPage('review-queue');
         }}
         onAddComment={handleAddComment}
+        onDeleteTask={handleDeleteTask}
+        onUpdateStatus={handleUpdateTaskStatus}
       />
 
       <EvidenceUploaderModal

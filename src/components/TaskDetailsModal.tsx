@@ -9,9 +9,10 @@ import {
   MessageSquare, 
   CheckCircle2, 
   Clock, 
-  AlertCircle 
+  AlertCircle,
+  Trash2 
 } from 'lucide-react';
-import { Task, Profile } from '../types/database.types';
+import { Task, Profile, TaskStatus } from '../types/database.types';
 import { formatDueDateTime } from '../lib/dateUtils';
 
 interface TaskDetailsModalProps {
@@ -21,6 +22,8 @@ interface TaskDetailsModalProps {
   onSubmitEvidenceClick: (task: Task) => void;
   onReviewClick: (task: Task) => void;
   onAddComment: (taskId: string, comment: string) => void;
+  onDeleteTask?: (taskId: string) => void;
+  onUpdateStatus?: (taskId: string, newStatus: TaskStatus) => void;
 }
 
 export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
@@ -29,7 +32,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   currentUser,
   onSubmitEvidenceClick,
   onReviewClick,
-  onAddComment
+  onAddComment,
+  onDeleteTask,
+  onUpdateStatus
 }) => {
   if (!task) return null;
 
@@ -251,15 +256,53 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition"
-          >
-            Close
-          </button>
-
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition"
+            >
+              Close
+            </button>
+
+            {/* Live Delete Task Button */}
+            {onDeleteTask && (isSuperAdmin || isOfficer) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Are you sure you want to permanently delete task "${task.taskCode}: ${task.title}"?`)) {
+                    onDeleteTask(task.id);
+                    onClose();
+                  }
+                }}
+                className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 transition flex items-center space-x-1"
+                title="Permanently remove this task"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Task</span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Live Status Selector */}
+            {onUpdateStatus && (
+              <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1.5 rounded-lg border border-slate-300">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Status:</span>
+                <select
+                  value={task.status}
+                  onChange={(e) => onUpdateStatus(task.id, e.target.value as TaskStatus)}
+                  className="text-xs font-bold text-[#004165] bg-transparent focus:outline-none cursor-pointer"
+                >
+                  <option value="not_started">Not Started</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="submitted_for_review">Submitted for Review</option>
+                  <option value="approved">Approved & Verified</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            )}
+
             {/* Submit Evidence Button */}
             {task.status !== 'approved' && (
               <button

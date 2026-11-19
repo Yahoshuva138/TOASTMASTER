@@ -10,7 +10,8 @@ import {
   Clock, 
   Paperclip, 
   ShieldCheck, 
-  ExternalLink 
+  ExternalLink,
+  Trash2 
 } from 'lucide-react';
 import { Task, Department, Profile, ViewMode, TaskStatus, TaskPriority } from '../types/database.types';
 import { formatDueDateTime } from '../lib/dateUtils';
@@ -22,6 +23,8 @@ interface AllTasksProps {
   onSelectTask: (task: Task) => void;
   onCreateTaskClick: () => void;
   onSubmitEvidenceClick: (task: Task) => void;
+  onDeleteTask?: (taskId: string) => void;
+  onClearAllSampleTasks?: () => void;
 }
 
 export const AllTasks: React.FC<AllTasksProps> = ({
@@ -30,7 +33,9 @@ export const AllTasks: React.FC<AllTasksProps> = ({
   currentUser,
   onSelectTask,
   onCreateTaskClick,
-  onSubmitEvidenceClick
+  onSubmitEvidenceClick,
+  onDeleteTask,
+  onClearAllSampleTasks
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('all');
@@ -112,13 +117,27 @@ export const AllTasks: React.FC<AllTasksProps> = ({
               </button>
             </div>
 
-            <button
-              onClick={onCreateTaskClick}
-              className="px-4 py-2 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center space-x-1"
-            >
-              <Plus className="w-3.5 h-3.5 text-[#F2DF74]" />
-              <span>New Task</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              {onClearAllSampleTasks && tasks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onClearAllSampleTasks}
+                  className="px-3 py-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center space-x-1"
+                  title="Clear sample tasks to start with clean real data"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="hidden md:inline">Reset to Clean Real Data</span>
+                </button>
+              )}
+
+              <button
+                onClick={onCreateTaskClick}
+                className="px-4 py-2 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center space-x-1"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#F2DF74]" />
+                <span>New Task</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -213,12 +232,27 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                           <span className="text-[10px] font-bold bg-[#772432] text-[#F2DF74] px-1.5 py-0.5 rounded">
                             {t.taskCode}
                           </span>
-                          <span className={`text-[10px] font-bold uppercase ${
-                            t.priority === 'urgent' ? 'text-red-600' :
-                            t.priority === 'high' ? 'text-amber-600' : 'text-blue-600'
-                          }`}>
-                            {t.priority}
-                          </span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className={`text-[10px] font-bold uppercase ${
+                              t.priority === 'urgent' ? 'text-red-600' :
+                              t.priority === 'high' ? 'text-amber-600' : 'text-blue-600'
+                            }`}>
+                              {t.priority}
+                            </span>
+                            {onDeleteTask && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Delete task ${t.taskCode}: "${t.title}"?`)) onDeleteTask(t.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-red-600 transition"
+                                title="Delete Task"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#004165] transition leading-snug">
@@ -314,15 +348,30 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                       </td>
                       <td className="px-4 py-3 text-slate-500 font-medium">{formatDueDateTime(t.dueDate)}</td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectTask(t);
-                          }}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-[#004165] hover:text-white rounded text-[11px] font-semibold transition"
-                        >
-                          View
-                        </button>
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectTask(t);
+                            }}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-[#004165] hover:text-white rounded text-[11px] font-semibold transition"
+                          >
+                            View
+                          </button>
+                          {onDeleteTask && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm(`Permanently delete task ${t.taskCode}?`)) onDeleteTask(t.id);
+                              }}
+                              className="p-1 text-slate-400 hover:text-red-600 transition"
+                              title="Delete Task"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
