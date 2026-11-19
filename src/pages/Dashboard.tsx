@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   CheckCircle2, 
   Clock, 
@@ -14,7 +14,13 @@ import {
   UserCheck,
   UserX,
   Mail,
-  Check
+  Check,
+  Compass,
+  BookOpen,
+  Award,
+  Users,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { Task, Profile, Department, ActivityLogItem, UserSystemRole } from '../types/database.types';
 import { formatDueDateTime, isTaskOverdue } from '../lib/dateUtils';
@@ -49,6 +55,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // State for inline quick-assignment roles on dashboard
   const [selectedRoles, setSelectedRoles] = React.useState<Record<string, { role: UserSystemRole; deptId: string }>>({});
   const [approvedNotification, setApprovedNotification] = React.useState<string | null>(null);
+  const [workflowTab, setWorkflowTab] = useState<'pipeline' | 'officers' | 'milestones'>('pipeline');
 
   const getClubTitleForRole = (r: UserSystemRole): string => {
     switch (r) {
@@ -359,6 +366,319 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <span className={`text-2xl font-brand font-black ${overdue > 0 ? 'text-red-700' : 'text-slate-800'}`}>{overdue}</span>
           <span className="text-[10px] text-red-600 block mt-1">{overdue > 0 ? 'Action required' : 'On schedule'}</span>
         </div>
+
+      </div>
+
+      {/* INTERACTIVE CLUB NAVIGATION & WORKFLOW GUIDE (Visual Flow of Everyone) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in">
+        
+        {/* Header with Navigation Tabs */}
+        <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-[#004165] text-[#F2DF74] flex items-center justify-center shadow flex-shrink-0">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-brand font-bold uppercase text-[#772432] tracking-wider">
+                  Club Governance & Flow
+                </span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                  SpeakUp Scaler #28681022
+                </span>
+              </div>
+              <h2 className="text-base sm:text-lg font-brand font-black text-slate-900">
+                Interactive Club Navigation & Workflow Map
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold w-full md:w-auto">
+            <button
+              onClick={() => setWorkflowTab('pipeline')}
+              className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg transition ${
+                workflowTab === 'pipeline'
+                  ? 'bg-white text-[#004165] shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              1. 4-Stage Pipeline
+            </button>
+            <button
+              onClick={() => setWorkflowTab('officers')}
+              className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg transition ${
+                workflowTab === 'officers'
+                  ? 'bg-white text-[#004165] shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              2. Flow of Everyone (7 Roles)
+            </button>
+            <button
+              onClick={() => setWorkflowTab('milestones')}
+              className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg transition ${
+                workflowTab === 'milestones'
+                  ? 'bg-white text-[#004165] shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              3. Proof & MoM Rules
+            </button>
+          </div>
+        </div>
+
+        {/* Tab 1: 4-Stage Operational Pipeline */}
+        {workflowTab === 'pipeline' && (
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+              
+              {/* Step 1: Login & Access Approval */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between hover:border-[#004165] transition relative">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold bg-[#004165] text-[#F2DF74] px-2 py-0.5 rounded uppercase">
+                      Stage 1
+                    </span>
+                    <ShieldCheck className="w-5 h-5 text-[#004165]" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm mb-1">Google Auth & Access Control</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Members register with Google. Super Admin <span className="font-semibold text-slate-900">TM Yahoshuva Kesaboyina</span> approves requests and assigns official Toastmasters leadership roles.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('members')}
+                  className="mt-4 text-xs font-bold text-[#004165] hover:text-[#772432] flex items-center space-x-1"
+                >
+                  <span>Members & Access Queue →</span>
+                </button>
+              </div>
+
+              {/* Step 2: Meeting Agendas & Role Claims */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between hover:border-[#004165] transition">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold bg-[#772432] text-white px-2 py-0.5 rounded uppercase">
+                      Stage 2
+                    </span>
+                    <Calendar className="w-5 h-5 text-[#772432]" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm mb-1">Agendas & Role Signups</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    VP Education publishes the meeting theme and agenda. Members sign up for TMOD, Speakers 1–6, General Evaluator, Timer, and Ah-Counter slots.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('meeting-agendas')}
+                  className="mt-4 text-xs font-bold text-[#004165] hover:text-[#772432] flex items-center space-x-1"
+                >
+                  <span>Claim Meeting Roles →</span>
+                </button>
+              </div>
+
+              {/* Step 3: Evidence-Backed Execution */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between hover:border-[#004165] transition">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold bg-amber-600 text-white px-2 py-0.5 rounded uppercase">
+                      Stage 3
+                    </span>
+                    <Paperclip className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm mb-1">Execution & Evidence Upload</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Speakers deliver milestone speeches; officers fulfill duties. Verified photos from Scaler Hall, speech video links, and MoM records are uploaded as proof.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('all-tasks')}
+                  className="mt-4 text-xs font-bold text-[#004165] hover:text-[#772432] flex items-center space-x-1"
+                >
+                  <span>Submit Task Evidence →</span>
+                </button>
+              </div>
+
+              {/* Step 4: Verification & Audit Archive */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between hover:border-[#004165] transition">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded uppercase">
+                      Stage 4
+                    </span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm mb-1">Officer Sign-Off & Audit</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Club President and VP Education review submitted evidence, provide constructive feedback, approve milestones, and update immutable club archives.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('review-queue')}
+                  className="mt-4 text-xs font-bold text-[#004165] hover:text-[#772432] flex items-center space-x-1"
+                >
+                  <span>Open Review Queue →</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Flow of Everyone (7 Key Roles) */}
+        {workflowTab === 'officers' && (
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              
+              {/* President */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#772432] bg-[#772432]/10 px-2 py-0.5 rounded">
+                    Club President
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">TM Arunima Vats</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Opens and closes meetings with gavel; presides over Executive Committee; verifies club charter goals and official meeting adherence.
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Presidential Address, Charter Adherence, Executive Alignments.
+                </div>
+              </div>
+
+              {/* VP Education */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#004165] bg-[#004165]/10 px-2 py-0.5 rounded">
+                    VP Education
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">TM Shakthi Sivapriya</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Publishes meeting agendas, schedules speaker milestone slots, coordinates speech evaluations, and manages Pathways mentor assignments.
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Agenda Publishing, Speech Slotting, Evaluator Training.
+                </div>
+              </div>
+
+              {/* Super Admin / Secretary */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                    Secretary & Super Admin
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">TM Yahoshuva Kesaboyina</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Compiles official master Minutes of the Meeting (MoM), approves member access requests, manages platform permissions and cloud synchronization.
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Master MoM Compilation, User Approval, Cloud Sync.
+                </div>
+              </div>
+
+              {/* VP Membership & SAA */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    SAA / VP Membership
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">TM Ashish Patel</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Maintains meeting room decorum, positions timing light/cards (Green/Yellow/Red), welcomes club guests, and coordinates Moments of Truth evaluations.
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Timing Card Protocol, Hall Setup, Guest Hospitality.
+                </div>
+              </div>
+
+              {/* VP Public Relations */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded">
+                    VP Public Relations
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">TM Harshitha</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Designs meeting flyers and theme graphics; photographs award winners; publishes meeting recaps on Instagram and LinkedIn.
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Meeting Flyers, Award Carousels, Brand Guidelines.
+                </div>
+              </div>
+
+              {/* Members & Speakers */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded">
+                    Members & Speakers
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">Vedali, Rehan, Abdul Rahman</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Deliver Level 1-5 Pathways speeches, participate in impromptu Table Topics, take up meeting functional roles (Timer, Ah-Counter, Grammarian).
+                </p>
+                <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200">
+                  Key Tasks: Icebreaker Speeches, Table Topics, Rehearsals.
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Proof & MoM Standards */}
+        {workflowTab === 'milestones' && (
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center space-x-2 text-[#004165] font-bold text-xs uppercase">
+                  <Award className="w-4 h-4 text-[#F2DF74]" />
+                  <span>Speech Milestone Evidence</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Every prepared speech requires a photo frame from Scaler Hall or recording timestamp, evaluator written notes, and speech duration verification.
+                </p>
+                <span className="text-[11px] text-[#004165] font-semibold block pt-1">
+                  Standard: 5–7 mins with slide projection & vocal variety.
+                </span>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center space-x-2 text-[#772432] font-bold text-xs uppercase">
+                  <BookOpen className="w-4 h-4 text-[#772432]" />
+                  <span>MoM & Meeting Documentation</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Consolidated Minutes of the Meeting (MoM) must record total attendance, guest roster, speech titles, award winners, and executive action items.
+                </p>
+                <span className="text-[11px] text-[#772432] font-semibold block pt-1">
+                  Standard: Published within 48h to Club Archives.
+                </span>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center space-x-2 text-emerald-800 font-bold text-xs uppercase">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Role Resource Manuals</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  All 16 official Toastmasters PDF manuals and scripts (Timer, Ah-Counter, Grammarian, Evaluator, SAA) are embedded with live preview and download.
+                </p>
+                <button
+                  onClick={() => onNavigate('role-resources')}
+                  className="text-[11px] font-bold text-[#004165] hover:underline block pt-1"
+                >
+                  View All 16 Official Manuals →
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
 

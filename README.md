@@ -1,112 +1,143 @@
 # 🏆 TOASTMASTERS TASK HUB
-> **SpeakUp Scaler Toastmasters Club** — *Learn • Speak • Lead*
+> **SpeakUp Scaler Toastmasters Club #28681022** • *District 227 • Division E • Area 04*  
+> *Where Leaders Are Made • Learn • Speak • Lead*
 
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green.svg)](https://supabase.com/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Realtime%20Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel Analytics](https://img.shields.io/badge/Vercel-Analytics%20Enabled-black?logo=vercel&logoColor=white)](https://vercel.com/)
 
-A centralized, enterprise-grade task management and proof-verification platform built for Toastmasters leadership teams and members.
-
----
-
-## 🎯 Core Principles
-
-1. **Proof-Based Completion**: A task is never marked completed simply because a checkbox is clicked. Every milestone requires attached proof (video frames, documents, or links) and reviewer verification.
-2. **Accountability & Separation of Duties**: Toastmasters bylaws prohibit self-approval of personal tasks.
-3. **Role-Based Access Control (RBAC)**: Supports 9 Toastmasters leadership roles with fine-grained server-side Row Level Security (RLS) in PostgreSQL.
-4. **Public Google Registration with Member Defaulting**: Public Google OAuth is enabled; new users strictly receive the `Member` role and can never elevate their own privileges.
+A centralized, enterprise-grade task accountability, proof-verification, and meeting agenda governance platform built for Toastmasters leadership teams and club members.
 
 ---
 
-## 🏛️ Application Architecture
+## 🏛️ Executive Workflow & Club Pipeline
 
+```mermaid
+flowchart TD
+    subgraph STAGE1["Stage 1: Identity & Access Governance"]
+        A[User Signs in with Google] --> B{Is kesaboyinayahoshuva@gmail.com?}
+        B -- Yes --> C[Instant Super Admin Access]
+        B -- No --> D{Approved in Roster?}
+        D -- Yes --> E[Access Granted with Assigned Role]
+        D -- No --> F[Registered in Pending Queue]
+        F --> G[Super Admin TM Yahoshuva Approves & Assigns Role]
+        G --> E
+    end
+
+    subgraph STAGE2["Stage 2: Agendas & Meeting Role Signups"]
+        E --> H[VP Education Publishes Agenda]
+        H --> I[Members Claim Meeting Roles: TMOD, Speakers 1-6, Evaluator, Timer, Ah-Counter]
+        I --> J[Live Agenda Synced to Cloud]
+    end
+
+    subgraph STAGE3["Stage 3: Task Execution & Proof Submission"]
+        J --> K[Member Delivers Speech or Officer Fulfills Duty]
+        K --> L[Upload Real Evidence: Scaler Hall Photos, Speech Video Links, MoM Docs]
+        L --> M[Task Status: Submitted for Review]
+    end
+
+    subgraph STAGE4["Stage 4: Officer Sign-Off & Club Archive"]
+        M --> N[President / VP Education Reviews Evidence in Review Queue]
+        N --> O{Evidence Criteria Met?}
+        O -- No --> P[Request Changes with Constructive Feedback]
+        P --> K
+        O -- Yes --> Q[Approve Task & Award Milestone]
+        Q --> R[Immutable Activity Audit Trail & Cloud Roster Archive]
+    end
 ```
-                                 TOASTMASTERS TASK HUB
-                                          │
-       ┌──────────────────────────────────┼──────────────────────────────────┐
-       ▼                                  ▼                                  ▼
-[AUTHENTICATION]                  [RBAC & PERMISSIONS]              [EVIDENCE WORKFLOW]
-• Google OAuth                    • 9 Leadership Roles              • Mandatory Evidence
-• Public Self-Registration        • RLS PostgreSQL Policies         • No Self-Approval
-• Default "Member" Role           • Super Admin Bootstrap           • Image / PDF / Link
-• Zero Auto-Admin Escalation      • Permissions Matrix              • Constructive Feedback
-```
 
 ---
 
-## 🚀 Features & Modules
+## 👥 Flow of Everyone: Roles & Responsibilities
 
-- **Centralized Dashboard**: Live statistics (Total, In Progress, Under Review, Verified, Overdue, % Completion), department-wise progress bars, upcoming deadlines, and activity logs.
-- **Task Management**:
-  - **Kanban Board** (Column-based workflow)
-  - **Table View** (Sortable enterprise grid with direct actions)
-  - **Timeline / Calendar View** (Deadline visualizer)
-- **6 Toastmasters Committee Workspaces**:
-  - Executive Committee
-  - Education & Meeting Roles
-  - Membership
-  - Public Relations & Media
-  - Operations & Logistics
-  - Finance & Records
-- **Review Queue**: Reviewer portal with Approve/Reject/Request Changes, evidence inspection, and feedback validation (self-approval strictly blocked).
-- **Evidence Vault**: Historical archive of all submitted JPG/PNG frames, documents, and external proof links with full search and inspection previews.
-- **Member Management**: Admin page displaying member profiles, roles, departments, account statuses, assigned task counts, and activate/deactivate toggles.
-- **RBAC Matrix**: 9 leadership roles with 12 granular toggleable permissions.
-- **Reports & CSV Export**: Real-time performance analytics and 1-click CSV export of all club records.
-- **System Audit Trail**: Immutable audit trail of all task creations, updates, approvals, and role changes.
+| Role | Officer / Member | Committee | Key Responsibilities & To-Dos |
+| :--- | :--- | :--- | :--- |
+| **Super Admin & Secretary** | **TM Yahoshuva Kesaboyina** | Finance & Records | Manages master Minutes of the Meeting (MoM), approves member access requests, configures system permissions, and maintains cloud synchronization. |
+| **Club President** | **TM Arunima Vats** | Executive Committee | Presides over club meetings with gavel; oversees charter compliance, executive alignment, and reviews speech evidence. |
+| **VP Education (VPE)** | **TM Shakthi Sivapriya** | Education & Meeting Roles | Publishes meeting agendas, schedules Pathways speeches, assigns mentors, coordinates evaluations, and conducts educational masterclasses. |
+| **Sergeant at Arms (SAA) / VPM** | **TM Ashish Patel** | Operations & Logistics | Prepares meeting hall and timing lights/cards (Green/Yellow/Red); welcomes guests; coordinates Moments of Truth evaluations. |
+| **VP Public Relations (VPPR)** | **TM Harshitha** | Public Relations & Media | Designs meeting flyers and theme graphics; photographs award winners; publishes meeting recaps on Instagram & LinkedIn. |
+| **Prepared Speakers** | **TM Vedali, TM Rehan, TM Prakrit** | General Membership | Deliver Level 1–5 Pathways milestone speeches on stage; submit video proofs and evaluator feedback notes. |
+| **Club Members & Applicants** | **Abdul Rahman & New Members** | General Membership | Rehearse Level 1 Icebreaker speeches; participate in impromptu Table Topics; take up functional meeting roles (Timer, Ah-Counter, Grammarian). |
+
+---
+
+## 🎯 Real Tasks & Proof-Based Completion Standards
+
+A task is **never** completed by merely ticking a checkbox. Every milestone requires attached proof and reviewer sign-off:
+
+1. **Prepared Speeches (Levels 1–5)**:
+   - 5–7 minute speech delivered on stage at Scaler Hall.
+   - Evidence required: On-stage photograph, recorded video timestamp link, and written evaluator feedback.
+2. **Toastmaster of the Day (TMOD)**:
+   - Meeting theme introduction, transitions, and timing agenda management.
+   - Evidence required: Meeting agenda link and session photo.
+3. **Timer & Ah-Counter**:
+   - Holding Green (5m), Yellow (6m), and Red (7m) cards steadily; recording filler words.
+   - Evidence required: Official timing log sheet / script copy.
+4. **Minutes of the Meeting (MoM)**:
+   - Consolidated record containing attendance counts, speech titles, and award winners.
+   - Evidence required: Approved `.docx` or `.md` MoM archived in club records within 48 hours.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide React
-- **Backend & Database**: Supabase, PostgreSQL, Supabase Auth (Google OAuth), Supabase Storage
-- **Security**: PostgreSQL Row Level Security (RLS), Server-side authorization functions
+- **Frontend Framework**: React 18 with TypeScript
+- **Bundler & Tooling**: Vite 5
+- **Styling & Design System**: Tailwind CSS 3.4 (Toastmasters Loyal Blue `#004165`, True Maroon `#772432`, Happy Yellow `#F2DF74`, Cool Gray `#A9B2B1`)
+- **Backend & Cloud Database**: Supabase (PostgreSQL with Row Level Security)
+- **Authentication**: Supabase Auth (Google OAuth) + Local Storage Fallback
+- **Analytics & Observability**: Vercel Analytics (`@vercel/analytics`)
 
 ---
 
-## 📦 Getting Started
+## 🚀 Deployment & Vercel Configuration
 
-### 1. Clone the repository
+### 1. Environment Variables in Vercel
+In the Vercel Dashboard under **Project Settings &rarr; Environment Variables**, configure:
+
+| Key | Type | Value / Description |
+| :--- | :--- | :--- |
+| **`VITE_SUPABASE_URL`** | Plain Text | `https://your-project.supabase.co` |
+| **`VITE_SUPABASE_ANON_KEY`** | Secret | `eyJhbGciOi...` *(your anon/public key)* |
+
+### 2. Google OAuth in Supabase
+1. In Google Cloud Console, create OAuth 2.0 Client credentials:
+   - **Authorized JavaScript origins**: `https://<your-project>.supabase.co`, `https://<your-app>.vercel.app`
+   - **Authorized redirect URIs**: `https://<your-project>.supabase.co/auth/v1/callback`
+2. In Supabase Dashboard &rarr; **Authentication &rarr; Providers &rarr; Google**:
+   - Toggle **Enable Google provider**: ON
+   - Paste your **Client ID** and **Client Secret**.
+3. Under **Authentication &rarr; URL Configuration &rarr; Redirect URLs**:
+   - Add your live production Vercel domain (`https://<your-app>.vercel.app/**`).
+
+### 3. Vercel Analytics
+`@vercel/analytics` is installed and initialized in `src/main.tsx`. Page views and visitor metrics will automatically begin reporting once deployed.
+
+---
+
+## 💻 Local Development
+
 ```bash
+# Clone the repository
 git clone https://github.com/Yahoshuva138/TOASTMASTER.git
-cd TOASTMASTER
-```
+cd TOASTMASTER/TOASTMASTERS_TASK_HUB
 
-### 2. Install dependencies
-```bash
+# Install dependencies
 npm install
-```
 
-### 3. Configure environment variables
-Create `.env` using `.env.example`:
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### 4. Run development server
-```bash
+# Start local Vite development server
 npm run dev
-```
 
-### 5. Production Build
-```bash
+# Build production bundle
 npm run build
-npm run preview
 ```
 
 ---
 
-## 🗄️ Database Setup (Supabase)
-
-1. Open your **Supabase Project SQL Editor**.
-2. Run `supabase/schema.sql` to initialize all tables, RLS policies, triggers, and bucket configurations.
-3. After signing in once with Google, run `supabase/admin_bootstrap.sql` to assign Super Admin status to the project owner.
-
----
-
-## 📄 License
-This project is open-source under the MIT License.
+## 📄 License & Governance
+Official property of **SpeakUp Scaler Toastmasters Club #28681022**. Managed under the direction of Super Admin **TM Yahoshuva Kesaboyina** (`kesaboyinayahoshuva@gmail.com`).
