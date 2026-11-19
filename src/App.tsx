@@ -6,7 +6,9 @@ import {
   INITIAL_TEMPLATES, 
   INITIAL_TASKS, 
   INITIAL_NOTIFICATIONS, 
-  INITIAL_ACTIVITY_LOGS 
+  INITIAL_ACTIVITY_LOGS,
+  INITIAL_MEETINGS,
+  INITIAL_ROLE_SIGNUPS
 } from './lib/taskStore';
 import { 
   Task, 
@@ -19,7 +21,9 @@ import {
   TaskEvidence,
   ReviewAction,
   UserSystemRole,
-  TaskStatus
+  TaskStatus,
+  Meeting,
+  RoleSignup
 } from './types/database.types';
 
 // Layout & Core Components
@@ -46,6 +50,7 @@ import { ActivityLog } from './pages/ActivityLog';
 import { AdminSettings } from './pages/AdminSettings';
 import { UserProfile } from './pages/UserProfile';
 import { RoleResources } from './pages/RoleResources';
+import { MeetingAgendas } from './pages/MeetingAgendas';
 
 export default function App() {
   // Session & Auth State: NO auto-login by default! Show main login page on first load
@@ -81,6 +86,23 @@ export default function App() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>(INITIAL_ACTIVITY_LOGS);
 
+  // Meetings & Agendas State
+  const [meetings, setMeetings] = useState<Meeting[]>(() => {
+    const saved = localStorage.getItem('tm_hub_meetings');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return INITIAL_MEETINGS;
+  });
+
+  const [roleSignups, setRoleSignups] = useState<RoleSignup[]>(() => {
+    const saved = localStorage.getItem('tm_hub_role_signups');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return INITIAL_ROLE_SIGNUPS;
+  });
+
   // UI Navigation & Modals
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -102,6 +124,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tm_hub_members', JSON.stringify(members));
   }, [members]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_hub_meetings', JSON.stringify(meetings));
+  }, [meetings]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_hub_role_signups', JSON.stringify(roleSignups));
+  }, [roleSignups]);
 
   useEffect(() => {
     if (currentUser) {
@@ -586,6 +616,47 @@ export default function App() {
     setCurrentPage('all-tasks');
   };
 
+  // Meeting Role Signups & Agenda Handlers
+  const handleSignupRole = (meetingId: string, roleName: string, speechTitle?: string, pathwayProject?: string) => {
+    if (!currentUser) return;
+    const newSignup: RoleSignup = {
+      id: 'signup-' + Date.now(),
+      meetingId,
+      memberId: currentUser.id,
+      memberName: currentUser.fullName,
+      memberEmail: currentUser.email,
+      roleName,
+      speechTitle,
+      pathwayProject,
+      createdAt: new Date().toISOString()
+    };
+    setRoleSignups(prev => [newSignup, ...prev]);
+
+    const notif: NotificationItem = {
+      id: 'notif-' + Date.now(),
+      userId: currentUser.id,
+      title: 'Meeting Role Confirmed',
+      message: `You signed up as ${roleName} for the meeting. Check Meeting Roles Handbook for preparation guidelines.`,
+      type: 'task_assigned',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [notif, ...prev]);
+  };
+
+  const handleDropRole = (signupId: string) => {
+    setRoleSignups(prev => prev.filter(s => s.id !== signupId));
+  };
+
+  const handleCreateMeeting = (newMeeting: Omit<Meeting, 'id' | 'createdAt'>) => {
+    const m: Meeting = {
+      ...newMeeting,
+      id: 'meet-' + Date.now(),
+      createdAt: new Date().toISOString()
+    };
+    setMeetings(prev => [m, ...prev]);
+  };
+
   // If unauthenticated, show Login
   if (!currentUser) {
     return (
@@ -643,6 +714,19 @@ export default function App() {
               onNavigate={handleNavigate}
               onSelectTask={setSelectedTask}
               onCreateTaskClick={() => setIsCreateTaskOpen(true)}
+            />
+          )}
+
+          {currentPage === 'meeting-agendas' && (
+            <MeetingAgendas
+              meetings={meetings}
+              roleSignups={roleSignups}
+              currentUser={currentUser}
+              members={members}
+              onSignupRole={handleSignupRole}
+              onDropRole={handleDropRole}
+              onCreateMeeting={handleCreateMeeting}
+              onNavigate={handleNavigate}
             />
           )}
 

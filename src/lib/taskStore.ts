@@ -13,7 +13,9 @@ import {
   ActivityLogItem, 
   TaskTemplate,
   TaskEvidence,
-  TaskReview
+  TaskReview,
+  Meeting,
+  RoleSignup
 } from '../types/database.types';
 
 // 1. DEFAULT DEPARTMENTS (6 Toastmasters Departments)
@@ -1027,5 +1029,76 @@ export const INITIAL_ACTIVITY_LOGS: ActivityLogItem[] = [
     entityId: 'task-yk-01',
     details: { taskCode: 'YK-01', speaker: 'TM Yahoshuva Kesaboyina' },
     createdAt: '2026-11-17T19:00:00Z'
+  }
+];
+
+// 8. INITIAL TOASTMASTERS MEETINGS
+export const INITIAL_MEETINGS: Meeting[] = [
+  {
+    id: 'meet-06',
+    meetingNumber: 6,
+    meetingDate: '2026-11-21',
+    theme: 'Error 404: The Golden Repair (Kintsugi)',
+    wordOfTheDay: 'Resilience (noun: capacity to recover quickly)',
+    locationOrLink: 'Scaler Innovation Hall / Hybrid Room 4',
+    status: 'upcoming',
+    notes: 'Classic Kintsugi theme celebrating lessons from speaking failures. 2 Prepared Speeches scheduled.'
+  },
+  {
+    id: 'meet-07',
+    meetingNumber: 7,
+    meetingDate: '2026-11-28',
+    theme: 'The Art of Persuasion',
+    wordOfTheDay: 'Eloquence (noun: fluent or persuasive speaking)',
+    locationOrLink: 'Scaler Innovation Hall / Zoom Live',
+    status: 'upcoming',
+    notes: 'Pathways Project Speeches focusing on vocal variety and body language.'
+  },
+  {
+    id: 'meet-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-14',
+    theme: 'Asleep, But Not Rested',
+    wordOfTheDay: 'Somnolent',
+    locationOrLink: 'Scaler Innovation Hall',
+    status: 'completed',
+    notes: 'Successful meeting with 24 attendees and 2 Icebreaker speeches delivered.'
+  }
+];
+
+// 9. INITIAL ROLE SIGNUPS FOR UPCOMING MEETINGS
+export const INITIAL_ROLE_SIGNUPS: RoleSignup[] = [
+  {
+    id: 'signup-1',
+    meetingId: 'meet-06',
+    memberId: 'user-yahoshuva',
+    memberName: 'TM Yahoshuva Kesaboyina',
+    memberEmail: 'yahoshuva.kesaboyina@scaler.com',
+    roleName: 'Toastmaster of the Day (TMOD)',
+    speechTitle: '',
+    pathwayProject: '',
+    createdAt: '2026-11-18T10:00:00Z'
+  },
+  {
+    id: 'signup-2',
+    meetingId: 'meet-06',
+    memberId: 'user-arunima',
+    memberName: 'TM Arunima Vats',
+    memberEmail: 'arunima.vats@scaler.com',
+    roleName: 'General Evaluator (GE)',
+    speechTitle: '',
+    pathwayProject: '',
+    createdAt: '2026-11-18T11:00:00Z'
+  },
+  {
+    id: 'signup-3',
+    meetingId: 'meet-06',
+    memberId: 'user-harshitha',
+    memberName: 'TM Harshitha',
+    memberEmail: 'harshitha@scaler.com',
+    roleName: 'Prepared Speaker 1',
+    speechTitle: 'Embracing Imperfection',
+    pathwayProject: 'Dynamic Leadership - Level 1: Ice Breaker',
+    createdAt: '2026-11-18T12:00:00Z'
   }
 ];

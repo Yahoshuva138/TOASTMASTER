@@ -76,6 +76,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li>
                 <button 
+                  onClick={() => onNavigate?.('meeting-agendas')}
+                  className="hover:text-white hover:underline transition"
+                >
+                  Meeting Agendas & Role Sign-ups
+                </button>
+              </li>
+              <li>
+                <button 
                   onClick={() => onNavigate?.('all-tasks')}
                   className="hover:text-white hover:underline transition"
                 >

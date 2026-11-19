@@ -110,6 +110,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           <button
+            onClick={() => onNavigate('meeting-agendas')}
+            className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition border border-white/20 flex items-center space-x-1.5"
+          >
+            <span>📅 Meeting Agendas</span>
+          </button>
+          <button
             onClick={() => onNavigate('role-resources')}
             className="px-3.5 py-2 bg-[#F2DF74] hover:bg-yellow-300 text-[#004165] text-xs font-bold rounded-lg transition shadow-sm flex items-center space-x-1.5"
           >

@@ -174,3 +174,27 @@ export interface RolePermission {
 }
 
 export type ViewMode = 'kanban' | 'table' | 'calendar';
+
+export interface Meeting {
+  id: string;
+  meetingNumber: number;
+  meetingDate: string;
+  theme: string;
+  wordOfTheDay?: string;
+  locationOrLink: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface RoleSignup {
+  id: string;
+  meetingId: string;
+  memberId?: string;
+  memberName?: string;
+  memberEmail?: string;
+  roleName: string;
+  speechTitle?: string;
+  pathwayProject?: string;
+  createdAt: string;
+}
