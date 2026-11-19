@@ -43,6 +43,7 @@ import { Reports } from './pages/Reports';
 import { ActivityLog } from './pages/ActivityLog';
 import { AdminSettings } from './pages/AdminSettings';
 import { UserProfile } from './pages/UserProfile';
+import { RoleResources } from './pages/RoleResources';
 
 export default function App() {
   // Session & Auth State: Start with Yahoshuva as default logged in Super Admin
@@ -624,6 +625,10 @@ export default function App() {
               onSelectTask={setSelectedTask}
               onUseTemplate={handleUseTemplate}
             />
+          )}
+
+          {currentPage === 'role-resources' && (
+            <RoleResources />
           )}
 
           {currentPage === 'members' && (

@@ -67,7 +67,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onNavigate('role-resources')}
+            className="px-3.5 py-2 bg-[#F2DF74] hover:bg-yellow-300 text-[#004165] text-xs font-bold rounded-lg transition shadow-sm flex items-center space-x-1.5"
+          >
+            <span>📚 Role Resources</span>
+          </button>
           <button
             onClick={onCreateTaskClick}
             className="px-4 py-2 bg-[#772432] hover:bg-[#932C3E] text-white text-xs font-bold rounded-lg shadow-sm transition border border-[#932C3E]"

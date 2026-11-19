@@ -13,6 +13,7 @@ import {
   History, 
   Settings, 
   User,
+  BookOpen,
   ExternalLink
 } from 'lucide-react';
 import { Profile } from '../types/database.types';
@@ -46,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     { id: 'evidence-history', label: 'Evidence Vault', icon: Paperclip },
     { id: 'team-workspaces', label: 'Team Workspaces', icon: Building2 },
+    { id: 'role-resources', label: 'Role Toolkits & Docs', icon: BookOpen },
     { id: 'members', label: 'Club Members', icon: Users, officerOnly: true },
     { id: 'roles-permissions', label: 'Roles & RBAC', icon: ShieldCheck, adminOnly: true },
     { id: 'notifications', label: 'Notifications', icon: Bell },
