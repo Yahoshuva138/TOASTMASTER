@@ -10,9 +10,11 @@ import {
   CheckCircle2, 
   X,
   ExternalLink,
-  Menu
+  Menu,
+  HelpCircle
 } from 'lucide-react';
 import { Profile, NotificationItem } from '../types/database.types';
+import { ScalingGuideModal } from './ScalingGuideModal';
 
 interface NavbarProps {
   currentUser: Profile;
@@ -42,6 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   pendingMembersCount = 0
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
@@ -191,6 +194,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden xs:inline sm:inline">New Task</span>
               </button>
 
+              {/* Help & Scaling SOP Guide Button */}
+              <button
+                onClick={() => setIsGuideOpen(true)}
+                className="p-2 text-slate-600 hover:text-[#004165] hover:bg-slate-100 rounded-full transition flex items-center space-x-1"
+                title="System Instructions, ROI & Scaling Blueprint"
+              >
+                <HelpCircle className="w-5 h-5 text-[#004165]" />
+              </button>
+
               {/* Notification Bell */}
               <div className="relative">
                 <button
@@ -300,6 +312,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* System Instructions, ROI & Scaling Blueprint Modal */}
+      <ScalingGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onNavigate={onNavigate}
+      />
 
     </header>
   );
