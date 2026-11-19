@@ -25,6 +25,7 @@ import {
 // Layout & Core Components
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { Footer } from './components/Footer';
 import { CreateTaskModal } from './components/CreateTaskModal';
 import { TaskDetailsModal } from './components/TaskDetailsModal';
 import { EvidenceUploaderModal } from './components/EvidenceUploaderModal';
@@ -82,10 +83,16 @@ export default function App() {
 
   // UI Navigation & Modals
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOnline] = useState(true);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [evidenceTask, setEvidenceTask] = useState<Task | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page);
+    setIsMobileMenuOpen(false);
+  };
 
   // Sync to Local Storage
   useEffect(() => {
@@ -603,22 +610,27 @@ export default function App() {
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotificationRead}
         onCreateTaskClick={() => setIsCreateTaskOpen(true)}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
+        currentPage={currentPage}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
       />
 
       {/* Main Body with Sidebar */}
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
         
-        {/* Sidebar Navigation */}
+        {/* Sidebar Navigation (Desktop column & Mobile Slide-Over Drawer) */}
         <Sidebar
           currentPage={currentPage}
-          onNavigate={setCurrentPage}
+          onNavigate={handleNavigate}
           currentUser={currentUser}
           pendingReviewCount={pendingReviewCount}
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
         />
 
         {/* Page Content Container */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 min-w-0 max-w-full overflow-y-auto overflow-x-hidden">
           {currentPage === 'dashboard' && (
             <Dashboard
               tasks={tasks}
@@ -746,6 +758,9 @@ export default function App() {
         </main>
 
       </div>
+
+      {/* Official Toastmasters International Footer */}
+      <Footer onNavigate={handleNavigate} />
 
       {/* Global Modals */}
       <CreateTaskModal

@@ -80,8 +80,8 @@ export const AllTasks: React.FC<AllTasksProps> = ({
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Centralized Club Task Management</h1>
-              <p className="text-xs text-slate-500">Track, filter, and inspect tasks across all SpeakUp Scaler departments</p>
+              <h1 className="text-xl sm:text-2xl font-brand font-black text-[#004165]">Centralized Club Task Management</h1>
+              <p className="text-xs text-slate-500 font-medium">Track, filter, and inspect tasks across all SpeakUp Scaler departments</p>
             </div>
           </div>
 
@@ -212,8 +212,8 @@ export const AllTasks: React.FC<AllTasksProps> = ({
             return (
               <div key={col.id} className="bg-slate-100/80 p-4 rounded-2xl border border-slate-200">
                 <div className={`flex items-center justify-between pb-3 mb-3 border-b-2 ${col.color}`}>
-                  <span className="font-bold text-xs text-slate-800 uppercase tracking-wider">{col.label}</span>
-                  <span className="text-xs font-bold bg-white px-2 py-0.5 rounded-full border border-slate-200 text-slate-700">
+                  <span className="font-brand font-bold text-xs text-slate-800 uppercase tracking-wider">{col.label}</span>
+                  <span className="text-xs font-brand font-bold bg-white px-2 py-0.5 rounded-full border border-slate-200 text-slate-700">
                     {colTasks.length}
                   </span>
                 </div>
@@ -255,7 +255,7 @@ export const AllTasks: React.FC<AllTasksProps> = ({
                           </div>
                         </div>
 
-                        <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#004165] transition leading-snug">
+                        <h4 className="text-xs font-brand font-bold text-slate-900 group-hover:text-[#004165] transition leading-snug">
                           {t.title}
                         </h4>
 

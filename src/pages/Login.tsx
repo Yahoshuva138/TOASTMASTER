@@ -139,30 +139,51 @@ export const Login: React.FC<LoginProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004165] via-[#002B44] to-slate-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#004165] flex flex-col justify-between">
       
-      {/* Brand & Portal Header */}
-      <div className="text-center mb-6 max-w-md w-full animate-in fade-in">
-        <div className="w-20 h-20 rounded-2xl bg-white p-2.5 mx-auto flex items-center justify-center shadow-2xl mb-4 border-2 border-[#F2DF74]">
-          <img 
-            src="/toastmasters-logo.svg" 
-            alt="Toastmasters International Emblem" 
-            className="w-full h-full object-contain" 
-          />
+      {/* Top Utility Bar (matching toastmasters.org) */}
+      <div className="w-full bg-[#002B44] text-slate-200 text-xs py-2 px-4 border-b border-[#001D2E]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-[11px] sm:text-xs">
+            <span className="font-brand font-bold text-[#F2DF74] tracking-wider uppercase">
+              Where Leaders Are Made
+            </span>
+            <span className="text-slate-500">•</span>
+            <span className="text-slate-300">
+              SpeakUp Scaler Toastmasters Club #28681022
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-400 hidden sm:block">
+            District 227 • Division E • Area 04
+          </div>
         </div>
-        <h1 className="text-2xl font-black tracking-wide text-white uppercase drop-shadow-sm">
-          TOASTMASTERS TASK HUB
-        </h1>
-        <p className="text-sm font-semibold text-[#F2DF74] mt-0.5">
-          SpeakUp Scaler Toastmasters Club
-        </p>
-        <p className="text-xs text-slate-300 font-medium">
-          Club #28681022 • District 227 • Division E • Area 04
-        </p>
-        <p className="text-[11px] text-slate-400 mt-1 italic">
-          Where Leaders Are Made • Learn • Speak • Lead
-        </p>
       </div>
+
+      {/* Main Center Area */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-8">
+        
+        {/* Brand & Portal Header */}
+        <div className="text-center mb-6 max-w-md w-full animate-in fade-in">
+          <div className="w-20 h-20 rounded-2xl bg-white p-2 mx-auto flex items-center justify-center shadow-2xl mb-4 border-2 border-[#F2DF74]">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters International Emblem" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-brand font-black tracking-wide text-white uppercase drop-shadow-sm">
+            TOASTMASTERS TASK HUB
+          </h1>
+          <p className="text-sm font-brand font-bold text-[#F2DF74] mt-1">
+            SpeakUp Scaler Toastmasters Club
+          </p>
+          <p className="text-xs text-slate-200 font-medium">
+            Club #28681022 • District 227 • Division E • Area 04
+          </p>
+          <p className="text-[11px] text-slate-300 mt-1 italic font-brand">
+            Where Leaders Are Made • Learn • Speak • Lead
+          </p>
+        </div>
 
       {/* Main Login Card */}
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
@@ -372,12 +393,33 @@ export const Login: React.FC<LoginProps> = ({
       </div>
 
       {/* Security & Bylaws Notice */}
-      <div className="mt-6 text-center text-slate-400 text-xs max-w-sm">
+      <div className="mt-6 text-center text-slate-300 text-xs max-w-sm">
         <p>Protected by PostgreSQL Row Level Security & RBAC governance.</p>
-        <p className="text-[10px] text-slate-500 mt-1">
-          SpeakUp Scaler Toastmasters Club • Official Platform
+        <p className="text-[10px] text-[#F2DF74] mt-1 font-brand">
+          SpeakUp Scaler Toastmasters Club #28681022 • District 227
         </p>
       </div>
+
+      </div>
+
+      {/* Official Legal & Copyright Bottom Bar (Mandatory Toastmasters.org Disclaimer) */}
+      <footer className="w-full bg-[#001D2E] border-t-2 border-[#772432] py-4 px-4 sm:px-6 text-slate-400 text-xs">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div>
+            <p className="font-brand font-semibold text-slate-300">
+              © {new Date().getFullYear()} SpeakUp Scaler Toastmasters Club #28681022. All rights reserved.
+            </p>
+            <p className="text-[10px] text-slate-500 max-w-2xl leading-relaxed mt-0.5">
+              The information on this website is for the sole use of Toastmasters’ members for Toastmasters business only. 
+              Toastmasters International, the Toastmasters International logo, and all other Toastmasters trademarks and copyrights 
+              are the sole property of Toastmasters International.
+            </p>
+          </div>
+          <div className="text-[11px] font-bold text-[#F2DF74] flex-shrink-0 font-brand">
+            Learn • Speak • Lead
+          </div>
+        </div>
+      </footer>
 
     </div>
   );

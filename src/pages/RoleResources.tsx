@@ -282,11 +282,11 @@ export const RoleResources: React.FC = () => {
             />
           </div>
           <div>
-            <div className="flex items-center space-x-2 text-[#004165] mb-0.5">
-              <span className="text-xs font-bold uppercase tracking-wider">Official Club Toolkits</span>
+            <div className="flex items-center space-x-2 text-[#772432] mb-0.5">
+              <span className="text-[11px] font-brand font-bold uppercase tracking-wider">Official Club Toolkits</span>
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Toastmasters Role Resources & Toolkits</h1>
-            <p className="text-xs text-slate-500">
+            <h1 className="text-xl sm:text-2xl font-brand font-black text-[#004165]">Toastmasters Role Resources & Toolkits</h1>
+            <p className="text-xs text-slate-500 font-medium">
               Handbooks, official logos, flyer templates, letterheads, and checklists for every Toastmasters role
             </p>
           </div>

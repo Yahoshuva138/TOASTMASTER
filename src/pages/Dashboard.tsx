@@ -64,13 +64,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs bg-[#772432] text-[#F2DF74] px-2.5 py-0.5 rounded-full font-bold border border-[#932C3E]">
+              <span className="text-xs bg-[#772432] text-[#F2DF74] px-2.5 py-0.5 rounded-full font-brand font-bold border border-[#932C3E]">
                 {currentUser.clubRole}
               </span>
-              <span className="text-xs text-slate-300">SpeakUp Scaler Executive Workspace</span>
+              <span className="text-xs text-slate-300 font-medium">SpeakUp Scaler Executive Workspace</span>
             </div>
-            <h1 className="text-2xl font-black mt-1 text-white">Welcome, {currentUser.fullName}</h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-xl">
+            <h1 className="text-2xl sm:text-3xl font-brand font-black mt-1 text-white">Welcome, {currentUser.fullName}</h1>
+            <p className="text-sm text-slate-200 mt-1 max-w-xl font-sans">
               Accountability and proof-based tracking active across all 6 club departments. Verified video, document, and link evidence required for milestone completion.
             </p>
           </div>
@@ -103,71 +103,71 @@ export const Dashboard: React.FC<DashboardProps> = ({
         
         {/* Total Tasks */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-[#004165] transition" onClick={() => onNavigate('all-tasks')}>
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase">Total Tasks</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">Total Tasks</span>
             <ListTodo className="w-4 h-4 text-[#004165]" />
           </div>
-          <span className="text-2xl font-black text-slate-900">{totalTasks}</span>
+          <span className="text-2xl font-brand font-black text-slate-900">{totalTasks}</span>
           <span className="text-[10px] text-slate-500 block mt-1">Club-wide pool</span>
         </div>
 
         {/* Completion Rate */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase">Completion</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">Completion</span>
             <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
-          <span className="text-2xl font-black text-emerald-600">{completionPercentage}%</span>
+          <span className="text-2xl font-brand font-black text-emerald-600">{completionPercentage}%</span>
           <span className="text-[10px] text-emerald-700 block mt-1">{approved} tasks verified</span>
         </div>
 
         {/* Awaiting Review */}
         <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-200 shadow-sm cursor-pointer hover:border-purple-400 transition" onClick={() => onNavigate('review-queue')}>
           <div className="flex items-center justify-between text-purple-700 mb-1">
-            <span className="text-xs font-bold uppercase">In Review</span>
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">In Review</span>
             <FileCheck className="w-4 h-4 text-purple-600" />
           </div>
-          <span className="text-2xl font-black text-purple-900">{awaitingReview}</span>
+          <span className="text-2xl font-brand font-black text-purple-900">{awaitingReview}</span>
           <span className="text-[10px] text-purple-700 block mt-1">Evidence submitted</span>
         </div>
 
         {/* In Progress */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase">In Progress</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">In Progress</span>
             <Clock className="w-4 h-4 text-sky-600" />
           </div>
-          <span className="text-2xl font-black text-sky-700">{inProgress}</span>
+          <span className="text-2xl font-brand font-black text-sky-700">{inProgress}</span>
           <span className="text-[10px] text-slate-500 block mt-1">Active execution</span>
         </div>
 
         {/* Not Started */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase">Not Started</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">Not Started</span>
             <Clock className="w-4 h-4 text-slate-400" />
           </div>
-          <span className="text-2xl font-black text-slate-700">{notStarted}</span>
+          <span className="text-2xl font-brand font-black text-slate-700">{notStarted}</span>
           <span className="text-[10px] text-slate-500 block mt-1">Pending kickoff</span>
         </div>
 
         {/* Approved Tasks */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase">Approved</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider">Approved</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <span className="text-2xl font-black text-emerald-700">{approved}</span>
+          <span className="text-2xl font-brand font-black text-emerald-700">{approved}</span>
           <span className="text-[10px] text-slate-500 block mt-1">Proof confirmed</span>
         </div>
 
         {/* Overdue */}
         <div className={`p-4 rounded-xl border shadow-sm ${overdue > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-slate-200'}`}>
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-bold uppercase text-red-700">Overdue</span>
+          <div className="flex items-center justify-between text-slate-500 mb-1">
+            <span className="text-[11px] font-brand font-bold uppercase tracking-wider text-red-700">Overdue</span>
             <AlertTriangle className="w-4 h-4 text-red-600" />
           </div>
-          <span className={`text-2xl font-black ${overdue > 0 ? 'text-red-700' : 'text-slate-800'}`}>{overdue}</span>
+          <span className={`text-2xl font-brand font-black ${overdue > 0 ? 'text-red-700' : 'text-slate-800'}`}>{overdue}</span>
           <span className="text-[10px] text-red-600 block mt-1">{overdue > 0 ? 'Action required' : 'On schedule'}</span>
         </div>
 
