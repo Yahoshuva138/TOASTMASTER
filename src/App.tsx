@@ -59,7 +59,24 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<Profile | null>(() => {
     const saved = localStorage.getItem('tm_hub_user');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed: Profile = JSON.parse(saved);
+        if (parsed) {
+          // If legacy user, upgrade to kesaboyinayahoshuva@gmail.com
+          if (parsed.id === 'user-yahoshuva' || parsed.email === 'yahoshuva.kesaboyina@scaler.com') {
+            return {
+              ...parsed,
+              email: 'kesaboyinayahoshuva@gmail.com',
+              fullName: 'TM Yahoshuva Kesaboyina',
+              systemRole: 'super_admin',
+              clubRole: 'Super Admin / Club Secretary',
+              isActive: true,
+              accessStatus: 'approved'
+            };
+          }
+          return parsed;
+        }
+      } catch (e) {}
     }
     return null; // Start at the main login portal
   });
@@ -100,8 +117,17 @@ export default function App() {
             updated.unshift(INITIAL_PROFILES[0]);
           }
 
-          // 3. Ensure Abdul Rahman is present in roster
-          if (!updated.some(m => m.email.toLowerCase() === 'abdulrahman2425201@gmail.com')) {
+          // 3. Ensure Abdul Rahman is approved in roster
+          const abdulIdx = updated.findIndex(m => m.email.toLowerCase() === 'abdulrahman2425201@gmail.com');
+          if (abdulIdx >= 0) {
+            updated[abdulIdx] = {
+              ...updated[abdulIdx],
+              clubRole: 'Club Member',
+              systemRole: 'member',
+              isActive: true,
+              accessStatus: 'approved'
+            };
+          } else {
             const abdul = INITIAL_PROFILES.find(p => p.email === 'abdulrahman2425201@gmail.com');
             if (abdul) updated.push(abdul);
           }

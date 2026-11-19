@@ -116,6 +116,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {item.badge}
                   </span>
                 )}
+                {item.badge !== undefined && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor || 'bg-slate-200 text-slate-700'}`}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -152,6 +157,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Icon className={`w-4 h-4 ${isActive ? 'text-[#F2DF74]' : 'text-slate-500'}`} />
                   <span>{item.label}</span>
                 </div>
+                {item.badge !== undefined && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor || 'bg-slate-200 text-slate-700'}`}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

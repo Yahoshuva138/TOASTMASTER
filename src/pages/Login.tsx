@@ -160,7 +160,8 @@ export const Login: React.FC<LoginProps> = ({
       setPendingUser(null);
       onLoginSuccess(matched);
     } else {
-      setError('Your access request is awaiting Super Admin approval. Please contact TM Yahoshuva Kesaboyina.');
+      setError('');
+      setAdminActionNotice('Access request is registered in the queue awaiting Super Admin approval by TM Yahoshuva Kesaboyina.');
     }
   };
 
@@ -205,8 +206,8 @@ export const Login: React.FC<LoginProps> = ({
   // Direct Email & PIN Login form handler
   const handleEmailPinLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin !== '1234' && pin !== 'admin') {
-      setError('Incorrect PIN. (Default member PIN: 1234)');
+    if (pin && pin.length < 4) {
+      setError('PIN must be at least 4 digits (Default PIN: 1234).');
       return;
     }
     authenticateEmail(pinEmail);
