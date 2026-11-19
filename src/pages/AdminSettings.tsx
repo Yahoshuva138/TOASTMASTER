@@ -302,7 +302,7 @@ CREATE POLICY "Members view access" ON public.members FOR SELECT USING (true);`;
           </span>
         </div>
         <p className="text-blue-800 leading-relaxed mt-1">
-          Super Admin is permanently mapped to <strong className="text-[#004165]">yahoshuva.kesaboyina@scaler.com</strong>.
+          Super Admin is permanently mapped to <strong className="text-[#004165]">kesaboyinayahoshuva@gmail.com</strong>.
           Public registration is active, and new users strictly receive the <span className="font-bold">Member</span> role with zero administrative authority until you approve and assign them a role.
         </p>
       </div>

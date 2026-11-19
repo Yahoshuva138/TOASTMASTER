@@ -74,7 +74,7 @@ export const INITIAL_DEPARTMENTS: Department[] = [
 export const INITIAL_PROFILES: Profile[] = [
   {
     id: 'user-yahoshuva',
-    email: 'yahoshuva.kesaboyina@scaler.com',
+    email: 'kesaboyinayahoshuva@gmail.com',
     fullName: 'TM Yahoshuva Kesaboyina',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
     clubRole: 'Super Admin / Club Secretary',

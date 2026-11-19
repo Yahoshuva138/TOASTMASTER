@@ -10,6 +10,7 @@ SET
   club_role = 'Super Admin / Club Secretary',
   is_active = true
 WHERE email IN (
+  'kesaboyinayahoshuva@gmail.com',
   'yahoshuva.kesaboyina@scaler.com',
   'yahoshuva@scaler.com'
 );

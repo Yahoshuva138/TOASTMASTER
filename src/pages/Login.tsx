@@ -36,6 +36,7 @@ export const Login: React.FC<LoginProps> = ({
   const isSuperAdminEmail = (rawEmail: string) => {
     const e = rawEmail.toLowerCase().trim();
     return (
+      e === 'kesaboyinayahoshuva@gmail.com' ||
       e === 'yahoshuva.kesaboyina@scaler.com' ||
       e === 'yahoshuva138@gmail.com' ||
       e === 'yahoshuva@scaler.com'
@@ -283,7 +284,7 @@ export const Login: React.FC<LoginProps> = ({
                   <span className="font-semibold text-slate-900">TM Yahoshuva Kesaboyina</span>
                 </div>
                 <p className="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
-                  Contact <span className="font-mono text-[#004165]">yahoshuva.kesaboyina@scaler.com</span> to activate your club role.
+                  Contact <span className="font-mono text-[#004165]">kesaboyinayahoshuva@gmail.com</span> to activate your club role.
                 </p>
               </div>
 
@@ -321,7 +322,7 @@ export const Login: React.FC<LoginProps> = ({
                   <input
                     type="email"
                     required
-                    placeholder="e.g. name@scaler.com or personal @gmail.com"
+                    placeholder="e.g. kesaboyinayahoshuva@gmail.com or name@scaler.com"
                     value={googleEmail}
                     onChange={e => setGoogleEmail(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
@@ -348,7 +349,7 @@ export const Login: React.FC<LoginProps> = ({
                 <span className="text-[10px] text-slate-400 block mb-1.5 font-semibold">Super Admin Quick Access</span>
                 <button
                   type="button"
-                  onClick={() => authenticateEmail('yahoshuva.kesaboyina@scaler.com')}
+                  onClick={() => authenticateEmail('kesaboyinayahoshuva@gmail.com')}
                   className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center justify-between"
                 >
                   <div className="flex items-center space-x-2">
