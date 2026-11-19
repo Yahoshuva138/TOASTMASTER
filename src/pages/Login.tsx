@@ -6,19 +6,16 @@ import {
   AlertCircle, 
   ArrowRight, 
   Clock, 
-  UserCheck, 
   CheckCircle2, 
   RefreshCw,
-  Sparkles,
-  Check
+  Info
 } from 'lucide-react';
 import { Profile, Department, UserSystemRole } from '../types/database.types';
 import { 
   syncAccessRequestToCloud, 
-  checkCloudApprovalStatus, 
-  grantCloudMemberAccess, 
-  getSystemRoleFromTitle 
+  checkCloudApprovalStatus 
 } from '../lib/cloudSync';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface LoginProps {
   onLoginSuccess: (user: Profile) => void;
@@ -31,23 +28,16 @@ interface LoginProps {
 export const Login: React.FC<LoginProps> = ({
   onLoginSuccess,
   onRequestAccess,
-  onApprovePendingMember,
-  members,
-  departments = []
+  members
 }) => {
-  const [activeTab, setActiveTab] = useState<'google' | 'pin' | 'admin'>('google');
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [pinEmail, setPinEmail] = useState('');
-  const [pin, setPin] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [pendingUser, setPendingUser] = useState<Profile | null>(null);
-
-  // Quick Super Admin approval state on pending screen
-  const [instantRole, setInstantRole] = useState('Club Member');
-  const [instantError, setInstantError] = useState('');
-  const [adminActionNotice, setAdminActionNotice] = useState('');
-
-  const pendingMembers = members.filter(m => m.accessStatus === 'pending');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleModalEmail, setGoogleModalEmail] = useState('');
 
   // Check if an email belongs to Super Admin
   const isSuperAdminEmail = (rawEmail: string) => {
@@ -63,6 +53,7 @@ export const Login: React.FC<LoginProps> = ({
   // Process authentication for ANY email address
   const authenticateEmail = (inputEmail: string, explicitName?: string) => {
     setError('');
+    setStatusMessage('');
     const cleanEmail = inputEmail.toLowerCase().trim();
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
@@ -74,7 +65,7 @@ export const Login: React.FC<LoginProps> = ({
     if (isSuperAdminEmail(cleanEmail)) {
       const superAdminProfile: Profile = {
         id: 'user-yahoshuva',
-        email: cleanEmail,
+        email: 'kesaboyinayahoshuva@gmail.com',
         fullName: 'TM Yahoshuva Kesaboyina',
         avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
         clubRole: 'Super Admin / Club Secretary',
@@ -123,17 +114,69 @@ export const Login: React.FC<LoginProps> = ({
     }
   };
 
+  // Google OAuth / Google Sign-In Action
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setStatusMessage('');
+
+    if (isSupabaseConfigured()) {
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin
+          }
+        });
+        if (error) {
+          console.warn('Supabase OAuth error, falling back to direct Google sign-in:', error.message);
+          setShowGoogleModal(true);
+        }
+      } catch (err: any) {
+        setShowGoogleModal(true);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Direct Google Account input dialog
+      setShowGoogleModal(true);
+    }
+  };
+
+  // Submit from Google Account Selector
+  const handleGoogleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleModalEmail.trim()) {
+      setError('Please provide your Google email address.');
+      return;
+    }
+    setShowGoogleModal(false);
+    authenticateEmail(googleModalEmail);
+  };
+
+  // Email & Password/PIN form submit
+  const handleEmailPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+    authenticateEmail(email);
+  };
+
   // Re-check pending status (checks both Live Cloud Supabase and local store)
   const handleCheckStatus = async () => {
     if (!pendingUser) return;
+    setLoading(true);
     const cleanEmail = pendingUser.email.toLowerCase().trim();
 
     if (isSuperAdminEmail(cleanEmail)) {
       authenticateEmail(cleanEmail);
+      setLoading(false);
       return;
     }
 
-    // 1. Check in Cloud Supabase first!
+    // 1. Check in Cloud Supabase first
     const cloudCheck = await checkCloudApprovalStatus(cleanEmail);
     if (cloudCheck.approved && cloudCheck.profile) {
       const fullProfile: Profile = {
@@ -150,6 +193,7 @@ export const Login: React.FC<LoginProps> = ({
         updatedAt: new Date().toISOString()
       };
       setPendingUser(null);
+      setLoading(false);
       onLoginSuccess(fullProfile);
       return;
     }
@@ -158,66 +202,19 @@ export const Login: React.FC<LoginProps> = ({
     const matched = members.find(m => m.email.toLowerCase() === cleanEmail);
     if (matched && (matched.accessStatus === 'approved' || matched.isActive)) {
       setPendingUser(null);
+      setLoading(false);
       onLoginSuccess(matched);
     } else {
-      setError('');
-      setAdminActionNotice('Access request is registered in the queue awaiting Super Admin approval by TM Yahoshuva Kesaboyina.');
+      setLoading(false);
+      setStatusMessage('Your request is in the queue. TM Yahoshuva Kesaboyina has not yet approved it.');
     }
-  };
-
-  // Super Admin Instant Approval directly from the pending card
-  const handleInstantApprove = async () => {
-    if (!pendingUser) return;
-    setInstantError('');
-
-    const sysRole = getSystemRoleFromTitle(instantRole);
-    const approvedProfile: Profile = {
-      ...pendingUser,
-      clubRole: instantRole,
-      systemRole: sysRole,
-      departmentId: departments[0]?.id || 'dept-edu',
-      departmentName: departments[0]?.name || 'Education & Meeting Roles',
-      isActive: true,
-      accessStatus: 'approved',
-      updatedAt: new Date().toISOString()
-    };
-
-    // Update parent state & cloud state
-    if (onApprovePendingMember) {
-      onApprovePendingMember(
-        pendingUser.id,
-        sysRole,
-        instantRole,
-        departments[0]?.id || 'dept-edu'
-      );
-    }
-    grantCloudMemberAccess(pendingUser.email, instantRole, pendingUser.fullName);
-
-    setPendingUser(null);
-    onLoginSuccess(approvedProfile);
-  };
-
-  // Google Login form submit
-  const handleGoogleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    authenticateEmail(googleEmail);
-  };
-
-  // Direct Email & PIN Login form handler
-  const handleEmailPinLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pin && pin.length < 4) {
-      setError('PIN must be at least 4 digits (Default PIN: 1234).');
-      return;
-    }
-    authenticateEmail(pinEmail);
   };
 
   return (
     <div className="min-h-screen bg-[#004165] flex flex-col justify-between">
       
-      {/* Top Utility Bar (matching toastmasters.org) */}
-      <div className="w-full bg-[#002B44] text-slate-200 text-xs py-2 px-4 border-b border-[#001D2E]">
+      {/* Top Utility Bar (Toastmasters International Standard) */}
+      <div className="w-full bg-[#002B44] text-slate-200 text-xs py-2.5 px-4 border-b border-[#001D2E]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 text-[11px] sm:text-xs">
             <span className="font-brand font-bold text-[#F2DF74] tracking-wider uppercase">
@@ -260,421 +257,237 @@ export const Login: React.FC<LoginProps> = ({
           </p>
         </div>
 
-      {/* Main Login Card */}
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
-        
-        {/* Navigation Tabs: Member Google vs PIN vs Super Admin Portal */}
-        <div className="grid grid-cols-3 bg-slate-100 p-1.5 border-b border-slate-200 text-xs font-bold">
-          <button
-            type="button"
-            onClick={() => { setActiveTab('google'); setError(''); setAdminActionNotice(''); }}
-            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
-              activeTab === 'google'
-                ? 'bg-white text-[#004165] shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-            </svg>
-            <span>Google</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setActiveTab('pin'); setError(''); setAdminActionNotice(''); }}
-            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
-              activeTab === 'pin'
-                ? 'bg-white text-[#004165] shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Lock className="w-3.5 h-3.5 text-[#772432]" />
-            <span>Email & PIN</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setActiveTab('admin'); setError(''); setAdminActionNotice(''); }}
-            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
-              activeTab === 'admin'
-                ? 'bg-white text-[#772432] shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#772432]" />
-            <span>Admin</span>
-            {pendingMembers.length > 0 && (
-              <span className="w-4 h-4 rounded-full bg-[#772432] text-[#F2DF74] text-[9px] font-black flex items-center justify-center">
-                {pendingMembers.length}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Content Body */}
-        <div className="p-8 space-y-6">
+        {/* Main Login Card */}
+        <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
           
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center space-x-2 border border-red-200 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {adminActionNotice && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-xl flex items-center space-x-2 border border-emerald-300 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span>{adminActionNotice}</span>
-            </div>
-          )}
-
-          {/* VIEW: Pending Access Approval Screen */}
-          {pendingUser ? (
-            <div className="space-y-4 text-center">
-              <div className="w-14 h-14 rounded-full bg-amber-100 border-2 border-amber-400 mx-auto flex items-center justify-center text-amber-700 animate-pulse">
-                <Clock className="w-7 h-7" />
+          <div className="p-8 space-y-6">
+            
+            {error && (
+              <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center space-x-2 border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
               </div>
+            )}
 
-              <div>
-                <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider block">Access Status</span>
-                <h3 className="text-lg font-bold text-slate-900 mt-0.5">Approval & Role Assignment Required</h3>
-                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                  Your email <span className="font-bold text-slate-900">{pendingUser.email}</span> is registered in the queue.
-                </p>
+            {statusMessage && (
+              <div className="p-3 bg-amber-50 text-amber-800 text-xs rounded-xl flex items-center space-x-2 border border-amber-200 animate-in fade-in">
+                <Info className="w-4 h-4 flex-shrink-0 text-amber-600" />
+                <span>{statusMessage}</span>
               </div>
+            )}
 
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-left text-xs space-y-1.5">
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Assigned Role:</span>
-                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    Pending Super Admin Assignment
-                  </span>
+            {/* PENDING APPROVAL VIEW */}
+            {pendingUser ? (
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-amber-100 border-2 border-amber-400 mx-auto flex items-center justify-center text-amber-700 animate-pulse">
+                  <Clock className="w-8 h-8" />
                 </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Authorized Approver:</span>
-                  <span className="font-semibold text-slate-900">TM Yahoshuva Kesaboyina</span>
+
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider block">Access Status</span>
+                  <h3 className="text-lg font-bold text-slate-900 mt-0.5">Approval & Role Assignment Required</h3>
+                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                    Your account <span className="font-bold text-slate-900">{pendingUser.email}</span> is registered.
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
-                  Contact <span className="font-mono text-[#004165]">kesaboyinayahoshuva@gmail.com</span> to activate your club role.
-                </p>
-              </div>
 
-              <div className="space-y-2 pt-2">
-                <button
-                  type="button"
-                  onClick={handleCheckStatus}
-                  className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Check Approval Status</span>
-                </button>
-
-                {/* Instant Super Admin Unlock Tool */}
-                <div className="mt-3 pt-3 border-t border-slate-200 text-left bg-amber-50/80 p-3.5 rounded-xl border-2 border-amber-300 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-[#004165]">
-                      <ShieldCheck className="w-4 h-4 text-[#772432]" />
-                      <span>Super Admin Action (TM Yahoshuva Kesaboyina)</span>
-                    </div>
-                    <span className="text-[9px] bg-[#772432] text-[#F2DF74] font-bold px-1.5 py-0.2 rounded">
-                      Quick Grant
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-left text-xs space-y-2">
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Assigned Role:</span>
+                    <span className="font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      Pending Super Admin Assignment
                     </span>
                   </div>
-
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
-                      Assign Role to {pendingUser.fullName || 'Member'}:
-                    </label>
-                    <select
-                      value={instantRole}
-                      onChange={e => setInstantRole(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white font-medium"
-                    >
-                      <option value="Club Member">Club Member (Standard)</option>
-                      <option value="Vice President Public Relations">Vice President Public Relations (VPPR)</option>
-                      <option value="Vice President Education">Vice President Education (VPE)</option>
-                      <option value="Vice President Membership">Vice President Membership (VPM)</option>
-                      <option value="Secretary">Club Secretary</option>
-                      <option value="Treasurer">Treasurer</option>
-                      <option value="Sergeant at Arms">Sergeant at Arms (SAA)</option>
-                      <option value="Club President">Club President</option>
-                    </select>
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Authorized Approver:</span>
+                    <span className="font-semibold text-slate-900">TM Yahoshuva Kesaboyina</span>
                   </div>
+                  <p className="text-[11px] text-slate-500 pt-1.5 border-t border-slate-200 leading-relaxed">
+                    Access to club records is restricted. Contact <span className="font-mono text-[#004165] font-semibold">kesaboyinayahoshuva@gmail.com</span> to get your leadership role approved.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCheckStatus}
+                    disabled={loading}
+                    className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center space-x-2 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    <span>{loading ? 'Checking Status...' : 'Check Approval Status'}</span>
+                  </button>
 
                   <button
                     type="button"
-                    onClick={handleInstantApprove}
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-brand font-bold text-xs rounded-lg transition shadow flex items-center justify-center space-x-1.5"
+                    onClick={() => {
+                      setPendingUser(null);
+                      setError('');
+                      setStatusMessage('');
+                    }}
+                    className="w-full py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Approve & Grant Immediate Access as {instantRole}</span>
+                    ← Sign In with a Different Account
                   </button>
                 </div>
-
-                {/* 1-Click Switch to Super Admin */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPendingUser(null);
-                    setError('');
-                    authenticateEmail('kesaboyinayahoshuva@gmail.com');
-                  }}
-                  className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 text-[#772432] text-xs font-bold rounded-lg border border-amber-300 transition flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-2">
-                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
-                    <span>Log In as TM Yahoshuva (Super Admin)</span>
-                  </div>
-                  <span className="text-[10px] font-bold bg-[#772432] text-[#F2DF74] px-2 py-0.5 rounded">
-                    Admin
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPendingUser(null);
-                    setError('');
-                  }}
-                  className="w-full py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition"
-                >
-                  ← Sign In with a Different Account
-                </button>
               </div>
-            </div>
-          ) : activeTab === 'admin' ? (
-            /* TAB 3: Super Admin Portal & Direct Approvals Queue */
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-[#002B44] to-[#004165] text-white p-4 rounded-2xl border border-[#001D2E] space-y-3 shadow-sm">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
-                    <ShieldCheck className="w-6 h-6 text-[#F2DF74]" />
-                  </div>
-                  <div>
-                    <h4 className="font-brand font-bold text-sm text-white">Super Admin Quick Sign-In</h4>
-                    <p className="text-[11px] text-slate-300">TM Yahoshuva Kesaboyina (Club Secretary & Executive)</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => authenticateEmail('kesaboyinayahoshuva@gmail.com')}
-                  className="w-full py-2.5 bg-[#F2DF74] hover:bg-[#e0cd62] active:scale-95 text-[#002B44] font-brand font-bold text-xs rounded-xl transition shadow flex items-center justify-center space-x-1.5"
-                >
-                  <span>Enter Executive Portal as Super Admin →</span>
-                </button>
-              </div>
-
-              {/* Pending Requests Queue Card right on Login screen */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-slate-900">
-                    <Clock className="w-4 h-4 text-amber-600" />
-                    <span>Pending Access Requests ({pendingMembers.length})</span>
-                  </div>
-                  {pendingMembers.length > 0 && (
-                    <span className="text-[9px] bg-[#772432] text-white font-bold px-2 py-0.5 rounded-full">
-                      Needs Action
-                    </span>
-                  )}
-                </div>
-
-                {pendingMembers.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic py-3 text-center">
-                    No pending member requests. All registered users are approved.
+            ) : (
+              /* STANDARD LOGIN VIEW */
+              <div className="space-y-5">
+                
+                <div className="text-center">
+                  <h2 className="text-xl font-brand font-bold text-slate-900">Sign In to Your Account</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Sign in with Google to access club tasks, agendas, and manuals
                   </p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {pendingMembers.map(pending => (
-                      <div 
-                        key={pending.id} 
-                        className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 text-left"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-xs text-slate-900 block">{pending.fullName}</span>
-                            <span className="text-[11px] text-slate-500 font-mono">{pending.email}</span>
-                          </div>
-                          <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
-                            Pending
-                          </span>
-                        </div>
-
-                        <div className="flex items-center space-x-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (onApprovePendingMember) {
-                                onApprovePendingMember(
-                                  pending.id, 
-                                  'member', 
-                                  'Club Member', 
-                                  departments[0]?.id || 'dept-edu'
-                                );
-                              }
-                              grantCloudMemberAccess(pending.email, 'Club Member', pending.fullName);
-                              setAdminActionNotice(`Granted Club Member access to ${pending.fullName}! They can now log in.`);
-                            }}
-                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-brand font-bold text-xs rounded-lg transition shadow-sm flex items-center justify-center space-x-1"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Accept as Club Member</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => authenticateEmail(pending.email)}
-                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"
-                            title="Sign in as this user to test"
-                          >
-                            Sign In
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : activeTab === 'google' ? (
-            /* TAB 1: Google OAuth Form */
-            <form onSubmit={handleGoogleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Google / Scaler Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. kesaboyinayahoshuva@gmail.com or name@scaler.com"
-                    value={googleEmail}
-                    onChange={e => setGoogleEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                  />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2 group"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <span>Continue with Google</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#F2DF74]" />
-              </button>
-
-              {/* 1-Click Fast Access for Yahoshuva */}
-              <div className="pt-2 border-t border-slate-100 text-center">
-                <span className="text-[10px] text-slate-400 block mb-1.5 font-semibold">Super Admin Quick Access</span>
+                {/* OFFICIAL GOOGLE SIGN-IN BUTTON */}
                 <button
                   type="button"
-                  onClick={() => authenticateEmail('kesaboyinayahoshuva@gmail.com')}
-                  className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition flex items-center justify-between"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl border border-slate-300 shadow-sm transition flex items-center justify-center space-x-3 active:scale-[0.99]"
                 >
-                  <div className="flex items-center space-x-2">
-                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
-                    <span>TM Yahoshuva Kesaboyina</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-[#772432] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    Super Admin
-                  </span>
+                  <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>Sign in with Google</span>
                 </button>
-              </div>
 
-              <p className="text-[11px] text-slate-500 text-center leading-relaxed">
-                Public Google authentication active. New accounts receive member access upon Super Admin verification.
-              </p>
-            </form>
-          ) : (
-            /* TAB 2: Email & PIN Form */
-            <form onSubmit={handleEmailPinLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Club Email</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. name@scaler.com or gmail.com"
-                    value={pinEmail}
-                    onChange={e => setPinEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                  />
+                {/* DIVIDER */}
+                <div className="relative flex items-center justify-center">
+                  <div className="border-t border-slate-200 w-full"></div>
+                  <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
+                    or continue with email
+                  </span>
+                </div>
+
+                {/* EMAIL & PASSWORD / PIN FORM */}
+                <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your.email@gmail.com"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#004165] transition"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase">
+                        Password or PIN
+                      </label>
+                      <span className="text-[10px] text-slate-400">Default PIN: 1234</span>
+                    </div>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#004165] transition"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-[#004165] hover:bg-[#002B44] text-white font-brand font-bold text-xs rounded-xl transition shadow flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Sign In</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+
+                <div className="pt-2 text-center text-[11px] text-slate-500">
+                  <p>Club member access is granted by Super Admin.</p>
+                  <p className="mt-0.5 text-slate-400">Admin Email: kesaboyinayahoshuva@gmail.com</p>
                 </div>
               </div>
+            )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Member Security PIN</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="Enter 4-digit PIN (default: 1234)"
-                    value={pin}
-                    onChange={e => setPin(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-[#004165] hover:bg-[#002B44] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2"
-              >
-                <span>Enter Toastmasters Hub</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#F2DF74]" />
-              </button>
-
-              <p className="text-[11px] text-slate-500 text-center">
-                Default officer & member access PIN: <code className="font-mono text-[#004165] font-bold">1234</code>
-              </p>
-            </form>
-          )}
+          </div>
 
         </div>
 
       </div>
 
-      {/* Security & Bylaws Notice */}
-      <div className="mt-6 text-center text-slate-300 text-xs max-w-sm">
-        <p>Protected by PostgreSQL Row Level Security & RBAC governance.</p>
-        <p className="text-[10px] text-[#F2DF74] mt-1 font-brand">
-          SpeakUp Scaler Toastmasters Club #28681022 • District 227
+      {/* GOOGLE ACCOUNT INPUT MODAL (Used for clean Google account entry/selection) */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 animate-in fade-in zoom-in-95">
+            <div className="text-center space-y-2 mb-5">
+              <svg className="w-8 h-8 mx-auto" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <h3 className="font-brand font-bold text-slate-900 text-base">Sign in with Google</h3>
+              <p className="text-xs text-slate-500">
+                Choose or enter your Google account to continue to Toastmasters Task Hub
+              </p>
+            </div>
+
+            <form onSubmit={handleGoogleModalSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                  Google Account Email
+                </label>
+                <input
+                  type="email"
+                  value={googleModalEmail}
+                  onChange={(e) => setGoogleModalEmail(e.target.value)}
+                  placeholder="e.g. kesaboyinayahoshuva@gmail.com"
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#004165]"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="flex-1 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 bg-[#004165] hover:bg-[#002B44] text-white text-xs font-bold rounded-xl shadow"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Footer Branding */}
+      <div className="w-full bg-[#002B44] text-slate-400 text-[11px] py-4 px-4 border-t border-[#001D2E] text-center">
+        <p className="font-brand font-semibold text-slate-300">
+          Toastmasters International • SpeakUp Scaler Toastmasters Club #28681022
+        </p>
+        <p className="text-[10px] text-slate-500 mt-0.5">
+          Official Toastmasters Club Governance • Super Admin: TM Yahoshuva Kesaboyina
         </p>
       </div>
-
-      </div>
-
-      {/* Official Legal & Copyright Bottom Bar (Mandatory Toastmasters.org Disclaimer) */}
-      <footer className="w-full bg-[#001D2E] border-t-2 border-[#772432] py-4 px-4 sm:px-6 text-slate-400 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div>
-            <p className="font-brand font-semibold text-slate-300">
-              © {new Date().getFullYear()} SpeakUp Scaler Toastmasters Club #28681022. All rights reserved.
-            </p>
-            <p className="text-[10px] text-slate-500 max-w-2xl leading-relaxed mt-0.5">
-              The information on this website is for the sole use of Toastmasters’ members for Toastmasters business only. 
-              Toastmasters International, the Toastmasters International logo, and all other Toastmasters trademarks and copyrights 
-              are the sole property of Toastmasters International.
-            </p>
-          </div>
-          <div className="text-[11px] font-bold text-[#F2DF74] flex-shrink-0 font-brand">
-            Learn • Speak • Lead
-          </div>
-        </div>
-      </footer>
 
     </div>
   );

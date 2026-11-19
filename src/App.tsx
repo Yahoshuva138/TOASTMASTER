@@ -238,6 +238,66 @@ export default function App() {
     };
   }, []);
 
+  // Google OAuth Listener (Detects Google Sign-In redirect from Supabase)
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user?.email) {
+        const cleanEmail = session.user.email.toLowerCase().trim();
+        const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || cleanEmail.split('@')[0];
+        const avatarUrl = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80';
+
+        if (
+          cleanEmail === 'kesaboyinayahoshuva@gmail.com' ||
+          cleanEmail === 'yahoshuva.kesaboyina@scaler.com' ||
+          cleanEmail === 'yahoshuva138@gmail.com' ||
+          cleanEmail === 'yahoshuva@scaler.com'
+        ) {
+          const superAdminProfile: Profile = {
+            id: 'user-yahoshuva',
+            email: 'kesaboyinayahoshuva@gmail.com',
+            fullName: 'TM Yahoshuva Kesaboyina',
+            avatarUrl,
+            clubRole: 'Super Admin / Club Secretary',
+            systemRole: 'super_admin',
+            departmentId: 'dept-fin',
+            departmentName: 'Finance & Records',
+            isActive: true,
+            accessStatus: 'approved',
+            createdAt: '2026-10-01T10:00:00Z',
+            updatedAt: new Date().toISOString()
+          };
+          setCurrentUser(superAdminProfile);
+        } else {
+          const matched = members.find(m => m.email.toLowerCase() === cleanEmail);
+          if (matched && (matched.accessStatus === 'approved' || matched.isActive)) {
+            setCurrentUser(matched);
+          } else {
+            const newPendingProfile: Profile = {
+              id: 'user-' + Date.now(),
+              email: cleanEmail,
+              fullName,
+              avatarUrl,
+              clubRole: 'Pending Role Assignment',
+              systemRole: 'member',
+              departmentName: 'Pending Assignment',
+              isActive: false,
+              accessStatus: 'pending',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            handleRequestAccess(newPendingProfile);
+          }
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [members]);
+
   // Auth Handlers
   const handleLoginSuccess = (user: Profile) => {
     setCurrentUser(user);
@@ -283,8 +343,13 @@ export default function App() {
     setActivityLogs(prev => [log, ...prev]);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setCurrentUser(null);
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {}
+    }
   };
 
   // Pre-authorize new email & assign role by Super Admin
