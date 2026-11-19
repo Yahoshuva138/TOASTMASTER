@@ -26,11 +26,20 @@ export const MyTasks: React.FC<MyTasksProps> = ({
       
       {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">My Assigned Tasks & Action Items</h1>
-          <p className="text-xs text-slate-500">
-            Responsibilities directly allocated to {currentUser.fullName} ({currentUser.clubRole})
-          </p>
+        <div className="flex items-center space-x-3.5">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 p-1.5 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">My Assigned Tasks & Action Items</h1>
+            <p className="text-xs text-slate-500">
+              Responsibilities directly allocated to {currentUser.fullName} ({currentUser.clubRole})
+            </p>
+          </div>
         </div>
         <button
           onClick={onCreateTaskClick}

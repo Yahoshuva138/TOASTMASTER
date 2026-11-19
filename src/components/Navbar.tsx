@@ -41,9 +41,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           
           {/* Brand & Club Details */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate('dashboard')}>
-            <div className="w-10 h-10 rounded-lg bg-[#772432] border border-[#F2DF74] flex items-center justify-center font-bold text-white shadow-sm">
-              <span className="text-[#F2DF74] text-xl font-black">T</span>M
+          <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => onNavigate('dashboard')}>
+            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md border-2 border-[#F2DF74]/80 group-hover:scale-105 transition-transform duration-200">
+              <img 
+                src="/toastmasters-logo.svg" 
+                alt="Toastmasters International Logo" 
+                className="w-full h-full object-contain" 
+              />
             </div>
             <div>
               <div className="flex items-center space-x-2">

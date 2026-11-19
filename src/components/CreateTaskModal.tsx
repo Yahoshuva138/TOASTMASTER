@@ -81,8 +81,10 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         
         {/* Header */}
         <div className="px-6 py-4 bg-[#004165] text-white flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CheckSquare className="w-5 h-5 text-[#F2DF74]" />
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center shadow-sm flex-shrink-0">
+              <img src="/toastmasters-logo.svg" alt="Toastmasters" className="w-full h-full object-contain" />
+            </div>
             <h3 className="font-bold text-lg">Create New Toastmasters Task</h3>
           </div>
           <button onClick={onClose} className="text-slate-300 hover:text-white transition">

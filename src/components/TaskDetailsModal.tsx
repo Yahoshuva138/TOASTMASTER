@@ -52,14 +52,19 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         
         {/* Header */}
         <div className="px-6 py-4 bg-[#004165] text-white flex items-center justify-between">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="bg-[#772432] text-[#F2DF74] text-xs font-bold px-2 py-0.5 rounded border border-[#932C3E]">
-                {task.taskCode}
-              </span>
-              <span className="text-xs text-slate-300 font-medium">{task.departmentName}</span>
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md flex-shrink-0">
+              <img src="/toastmasters-logo.svg" alt="Toastmasters" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-lg font-bold mt-1 text-white">{task.title}</h2>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="bg-[#772432] text-[#F2DF74] text-xs font-bold px-2 py-0.5 rounded border border-[#932C3E]">
+                  {task.taskCode}
+                </span>
+                <span className="text-xs text-slate-300 font-medium">{task.departmentName}</span>
+              </div>
+              <h2 className="text-lg font-bold mt-1 text-white">{task.title}</h2>
+            </div>
           </div>
           <button onClick={onClose} className="text-slate-300 hover:text-white transition">
             <X className="w-5 h-5" />

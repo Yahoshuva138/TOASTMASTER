@@ -54,17 +54,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
       
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-[#004165] to-[#002B44] text-white p-6 rounded-2xl shadow-sm border border-[#002B44] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs bg-[#772432] text-[#F2DF74] px-2.5 py-0.5 rounded-full font-bold border border-[#932C3E]">
-              {currentUser.clubRole}
-            </span>
-            <span className="text-xs text-slate-300">SpeakUp Scaler Executive Workspace</span>
+        <div className="flex items-start space-x-4">
+          <div className="w-14 h-14 rounded-2xl bg-white p-1.5 flex-shrink-0 shadow-lg border-2 border-[#F2DF74]/80 hidden sm:flex items-center justify-center">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters International" 
+              className="w-full h-full object-contain" 
+            />
           </div>
-          <h1 className="text-2xl font-black mt-1 text-white">Welcome, {currentUser.fullName}</h1>
-          <p className="text-sm text-slate-300 mt-1 max-w-xl">
-            Accountability and proof-based tracking active across all 6 club departments. Verified video, document, and link evidence required for milestone completion.
-          </p>
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs bg-[#772432] text-[#F2DF74] px-2.5 py-0.5 rounded-full font-bold border border-[#932C3E]">
+                {currentUser.clubRole}
+              </span>
+              <span className="text-xs text-slate-300">SpeakUp Scaler Executive Workspace</span>
+            </div>
+            <h1 className="text-2xl font-black mt-1 text-white">Welcome, {currentUser.fullName}</h1>
+            <p className="text-sm text-slate-300 mt-1 max-w-xl">
+              Accountability and proof-based tracking active across all 6 club departments. Verified video, document, and link evidence required for milestone completion.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

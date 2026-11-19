@@ -19,11 +19,20 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       
       {/* Profile Header Card */}
       <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-        <img 
-          src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'} 
-          alt={currentUser.fullName}
-          className="w-24 h-24 rounded-full object-cover border-4 border-[#004165] shadow-md"
-        />
+        <div className="relative">
+          <img 
+            src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'} 
+            alt={currentUser.fullName}
+            className="w-24 h-24 rounded-full object-cover border-4 border-[#004165] shadow-md"
+          />
+          <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-white p-1 border-2 border-[#F2DF74] shadow-md flex items-center justify-center">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+        </div>
 
         <div className="space-y-2 flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3">

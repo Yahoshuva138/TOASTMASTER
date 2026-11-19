@@ -101,12 +101,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Club Banner Card */}
       <div className="mt-6 pt-4 border-t border-slate-100">
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-          <span className="font-bold text-[#004165] block">Toastmasters Club #2867</span>
-          <p className="text-slate-500 mt-0.5">District 120 • Division G</p>
-          <div className="mt-2 text-[11px] text-slate-600 font-medium flex items-center justify-between">
-            <span>Verified System</span>
-            <span className="text-emerald-700 font-bold">100% Evidence</span>
+        <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters International Logo" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="font-bold text-[#004165] block truncate">SpeakUp Scaler TM</span>
+            <p className="text-[11px] text-slate-500 truncate">Club #2867 • Dist. 120</p>
+            <div className="mt-1 text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>100% Proof Verified</span>
+            </div>
           </div>
         </div>
       </div>

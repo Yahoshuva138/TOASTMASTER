@@ -65,15 +65,23 @@ export const Reports: React.FC<ReportsProps> = ({
       
       {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2 text-[#004165] mb-1">
-            <BarChart3 className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">Club Analytics</span>
+        <div className="flex items-center space-x-3.5">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 p-1.5 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+            <img 
+              src="/toastmasters-logo.svg" 
+              alt="Toastmasters" 
+              className="w-full h-full object-contain" 
+            />
           </div>
-          <h1 className="text-xl font-bold text-slate-900">Toastmasters Reports & Evidence Analytics</h1>
-          <p className="text-xs text-slate-500">
-            Real performance metrics derived from verified club meeting tasks and video proof submissions
-          </p>
+          <div>
+            <div className="flex items-center space-x-2 text-[#004165] mb-0.5">
+              <span className="text-xs font-bold uppercase tracking-wider">Club Analytics</span>
+            </div>
+            <h1 className="text-xl font-bold text-slate-900">Toastmasters Reports & Evidence Analytics</h1>
+            <p className="text-xs text-slate-500">
+              Real performance metrics derived from verified club meeting tasks and video proof submissions
+            </p>
+          </div>
         </div>
 
         <button

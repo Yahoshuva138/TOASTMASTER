@@ -71,8 +71,10 @@ export const EvidenceUploaderModal: React.FC<EvidenceUploaderModalProps> = ({
         
         {/* Header */}
         <div className="px-6 py-4 bg-[#772432] text-white flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Paperclip className="w-5 h-5 text-[#F2DF74]" />
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center shadow-sm flex-shrink-0">
+              <img src="/toastmasters-logo.svg" alt="Toastmasters" className="w-full h-full object-contain" />
+            </div>
             <div>
               <h3 className="font-bold text-base">Submit Evidence for Verification</h3>
               <p className="text-xs text-slate-200">{task.taskCode}: {task.title}</p>

@@ -86,15 +86,23 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center space-x-2 text-[#772432] mb-1">
-          <FileCheck className="w-5 h-5" />
-          <span className="text-xs font-bold uppercase tracking-wider">Verification Authority</span>
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
+        <div className="w-12 h-12 rounded-xl bg-slate-50 p-1.5 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+          <img 
+            src="/toastmasters-logo.svg" 
+            alt="Toastmasters" 
+            className="w-full h-full object-contain" 
+          />
         </div>
-        <h1 className="text-xl font-bold text-slate-900">Toastmasters Evidence Review Queue</h1>
-        <p className="text-xs text-slate-500">
-          Enforce accountability: Review submitted proof, examine video captures, and verify milestone completion.
-        </p>
+        <div>
+          <div className="flex items-center space-x-2 text-[#772432] mb-0.5">
+            <span className="text-xs font-bold uppercase tracking-wider">Verification Authority</span>
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Toastmasters Evidence Review Queue</h1>
+          <p className="text-xs text-slate-500">
+            Enforce accountability: Review submitted proof, examine video captures, and verify milestone completion.
+          </p>
+        </div>
       </div>
 
       {reviewableTasks.length === 0 ? (
