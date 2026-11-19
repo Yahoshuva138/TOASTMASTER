@@ -34,7 +34,55 @@ export const RoleResources: React.FC = () => {
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
 
   const resources: ResourceItem[] = [
-    // 1. Meeting Roles & Education
+    // 1. Core Official Manuals & Handbooks
+    {
+      id: 'res-leadership-handbook',
+      title: 'Toastmasters Club Leadership Handbook',
+      subtitle: 'Item 1310 - Complete Governance & Leadership Guide',
+      role: 'Club Executive Committee',
+      roleCategory: 'executive',
+      fileType: 'PDF',
+      fileSize: '810 KB',
+      path: '/resources/docs/Club Leadership Handbook.pdf',
+      description: 'Core handbook outlining roles and responsibilities of the 7 club officers, executive committee protocol, and Distinguished Club Program (DCP) goals.',
+      isFeatured: true
+    },
+    {
+      id: 'res-brand-manual',
+      title: 'Toastmasters International Brand Manual',
+      subtitle: 'Item 1111 - Master Brand Identity, Colors & Typography',
+      role: 'VP Public Relations & Officers',
+      roleCategory: 'pr',
+      fileType: 'PDF',
+      fileSize: '2.42 MB',
+      path: '/resources/docs/Toastmasters International Brand Manual.pdf',
+      description: 'Mandatory global guidelines for Loyal Blue, True Maroon, Cool Gray, Happy Yellow, Montserrat typography, photography rules, and club emblem lockups.',
+      isFeatured: true
+    },
+    {
+      id: 'res-officer-checklist',
+      title: 'Toastmasters Club Officers Checklist',
+      subtitle: 'Monthly & Semi-Annual Operational Action Checklist',
+      role: 'Club Officers',
+      roleCategory: 'executive',
+      fileType: 'PDF',
+      fileSize: '2.22 MB',
+      path: '/resources/docs/Club Officers Checklist.pdf',
+      description: 'Actionable checklists for each officer role broken down month-by-month to maintain club excellence and compliance.'
+    },
+    {
+      id: 'res-club-election',
+      title: 'Toastmasters Club Election Guidelines',
+      subtitle: 'Official Nominations & Voting Procedure Manual',
+      role: 'President & Secretary',
+      roleCategory: 'executive',
+      fileType: 'PDF',
+      fileSize: '672 KB',
+      path: '/resources/docs/Club Election.pdf',
+      description: 'Rules for appointing the Club Nominating Committee, running floor nominations, quorum requirements, and balloting.'
+    },
+
+    // 2. Meeting Roles & Scripts
     {
       id: 'res-roles-handbook',
       title: 'Toastmaster Club Meeting Roles Handbook',
@@ -48,6 +96,86 @@ export const RoleResources: React.FC = () => {
       isFeatured: true
     },
     {
+      id: 'res-meeting-roles-library',
+      title: 'Club Meeting Roles Resource Library',
+      subtitle: 'In-Depth Guides for All 8 Meeting Functions',
+      role: 'Meeting Role Players',
+      roleCategory: 'meeting_roles',
+      fileType: 'PDF',
+      fileSize: '3.59 MB',
+      path: '/resources/docs/club-meeting-roles-resource-library.pdf',
+      description: 'Comprehensive resource library with detailed preparation instructions, evaluation sheets, and speech delivery criteria.'
+    },
+    {
+      id: 'res-anatomy-meeting',
+      title: 'Anatomy of a Toastmasters Meeting',
+      subtitle: 'Item 472 - Official Meeting Flow & Time Segments',
+      role: 'TMOD & Members',
+      roleCategory: 'meeting_roles',
+      fileType: 'PDF',
+      fileSize: '72 KB',
+      path: '/resources/docs/472-anatomy-of-a-toastmasters-meeting.pdf',
+      description: 'Visual breakdown of the 3 meeting parts: Prepared Speeches, Table Topics impromptu session, and General Evaluation.'
+    },
+    {
+      id: 'res-ah-counter-log',
+      title: 'Official Ah-Counter Script and Log Sheet',
+      subtitle: 'Item 675A - Word & Sound Tracking Sheet (A4)',
+      role: 'Ah-Counter',
+      roleCategory: 'meeting_roles',
+      fileType: 'PDF',
+      fileSize: '60 KB',
+      path: '/resources/docs/03_Meeting_Roles_and_Scripts/675a-ah-counter-script-and-log/toastmasters-675A-ah-counter-script-and-log-A4.pdf',
+      description: 'Official printable log to record filler words (ah, um, err, you know, so) during speeches and impromptu sessions.'
+    },
+    {
+      id: 'res-timer-log',
+      title: 'Official Timer Script and Timing Sheet',
+      subtitle: 'Item 675E - Green, Amber, Red Disqualifier Log (A4)',
+      role: 'Timer',
+      roleCategory: 'meeting_roles',
+      fileType: 'PDF',
+      fileSize: '62 KB',
+      path: '/resources/docs/03_Meeting_Roles_and_Scripts/675e-timer-script-and-log/toastmasters-675E-timer-script-and-log-A4.pdf',
+      description: 'Official script and timing chart with signal flag rules (Green, Amber, Red) for 1-2 min topics, 5-7 min speeches, and 2-3 min evaluations.'
+    },
+
+    // 3. Education & Pathways
+    {
+      id: 'res-dtm-pathways',
+      title: 'DTM Through Pathways Milestone Roadmap',
+      subtitle: 'Complete Guide to Earning the Distinguished Toastmaster Award',
+      role: 'VP Education & Members',
+      roleCategory: 'education',
+      fileType: 'PDF',
+      fileSize: '868 KB',
+      path: '/resources/docs/DTM-Through-PATHWAYS.pdf',
+      description: 'Detailed progression tracker through 2 learning paths, club officer service, club coach/sponsor assignment, and DTM capstone project.',
+      isFeatured: true
+    },
+    {
+      id: 'res-mentoring-program',
+      title: 'Pathways Mentoring Program Manual',
+      subtitle: 'Item 801 - Club Mentor-Mentee Relationship Guide',
+      role: 'VP Education & Mentors',
+      roleCategory: 'education',
+      fileType: 'PDF',
+      fileSize: '3.16 MB',
+      path: '/resources/docs/Pathways Mentoring Program.pdf',
+      description: 'Step-by-step framework to assign experienced mentors to new speakers to build speech confidence and milestone completion.'
+    },
+    {
+      id: 'res-steps-choose-path',
+      title: '11 Pathways Selection & Assessment Guide',
+      subtitle: 'Decision Tree to Align Speeches with Career Goals',
+      role: 'VP Education & Members',
+      roleCategory: 'education',
+      fileType: 'PDF',
+      fileSize: '1.77 MB',
+      path: '/resources/docs/STEPS TO CHOOSE A PATH.pdf',
+      description: 'Visual guide comparing Dynamic Leadership, Presentation Mastery, Innovative Planning, Strategic Relationships, and 7 other paths.'
+    },
+    {
       id: 'res-new-member-kit',
       title: 'COMPASS District 227 New Member Starter Kit',
       subtitle: 'Official District 227 Onboarding & Pathways Guide',
@@ -56,8 +184,67 @@ export const RoleResources: React.FC = () => {
       fileType: 'PDF',
       fileSize: '323 KB',
       path: '/resources/COMPASS_District_227_New_Member_Starter_Kit.pdf',
-      description: 'Essential orientation kit explaining Pathways projects, meeting etiquette, mentor assignment, and foundational public speaking milestones.',
+      description: 'Essential orientation kit explaining Pathways projects, meeting etiquette, mentor assignment, and foundational public speaking milestones.'
+    },
+
+    // 4. Membership & Moments of Truth
+    {
+      id: 'res-guest-booklet',
+      title: 'Official Guest Information Booklet',
+      subtitle: 'Item 368 - Visitor Orientation & Club Membership Guide',
+      role: 'VP Membership',
+      roleCategory: 'membership',
+      fileType: 'PDF',
+      fileSize: '1.48 MB',
+      path: '/resources/docs/Guest Booklet.pdf',
+      description: 'Pamphlet provided to guests explaining what happens at a meeting, benefits of membership, and joining steps.'
+    },
+    {
+      id: 'res-moments-truth',
+      title: 'Moments of Truth Club Quality Manual',
+      subtitle: 'Item 290A - 6 Standards of Club Excellence',
+      role: 'Executive Committee',
+      roleCategory: 'executive',
+      fileType: 'PDF',
+      fileSize: '2.98 MB',
+      path: '/resources/docs/05_Membership_and_Guest_Relations/290-moments-of-truth/290A-moments-of-truth.pdf',
+      description: 'Club health audit assessing First Impressions, Membership Orientation, Fellowship, Program Planning, Membership Strength, and Achievement Recognition.'
+    },
+
+    // 5. Official Club Minutes of the Meeting (MoM)
+    {
+      id: 'res-mom-master-record',
+      title: 'SpeakUp Scaler Master MoM Record',
+      subtitle: 'Executive Archive Spanning Meetings 1 through 5',
+      role: 'Club Secretary',
+      roleCategory: 'secretary',
+      fileType: 'DOCX',
+      fileSize: '49 KB',
+      path: '/resources/mom/SpeakUp Scaler MoM Record.docx',
+      description: 'Consolidated official Minutes of Meeting authored by TM Yahoshuva Kesaboyina documenting meeting themes, speakers, evaluators, and awards.',
       isFeatured: true
+    },
+    {
+      id: 'res-mom-meeting-5',
+      title: 'Meeting 5 (Day 7) Official Minutes of Meeting',
+      subtitle: 'Theme: Asleep, But Not Rested • Word: Somnolent',
+      role: 'Club Secretary',
+      roleCategory: 'secretary',
+      fileType: 'DOCX',
+      fileSize: '42 KB',
+      path: '/resources/mom/SpeakUp_Scaler_MoM_Meeting_5_Day_7.docx',
+      description: 'Formal executive record of Sunday, 17 Nov 2026 meeting. Includes 6 speaker evaluations, awards winners, and president address.'
+    },
+    {
+      id: 'res-mom-todo-5',
+      title: 'Meeting 5 Action Items & Resolution Matrix',
+      subtitle: 'Post-Meeting Governance & Department TODO Tracker',
+      role: 'Club Secretary & Officers',
+      roleCategory: 'secretary',
+      fileType: 'DOCX',
+      fileSize: '38 KB',
+      path: '/resources/mom/SpeakUp_Scaler_TODO_Meeting_5_Day_7.docx',
+      description: 'Operational task accountability matrix resolving stage rehearsal, flyer release deadlines, and guest conversion actions.'
     },
     {
       id: 'res-posters-catalog',
