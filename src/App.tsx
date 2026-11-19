@@ -105,14 +105,135 @@ export default function App() {
   // Auth Handlers
   const handleLoginSuccess = (user: Profile) => {
     setCurrentUser(user);
-    // Add user to members list if new
     if (!members.some(m => m.id === user.id || m.email.toLowerCase() === user.email.toLowerCase())) {
       setMembers(prev => [...prev, user]);
     }
   };
 
+  // Self-Service Access Request Handler
+  const handleRequestAccess = (pendingUser: Profile) => {
+    if (!members.some(m => m.email.toLowerCase() === pendingUser.email.toLowerCase())) {
+      setMembers(prev => [pendingUser, ...prev]);
+    }
+
+    // Notify Super Admin
+    const notif: NotificationItem = {
+      id: 'notif-' + Date.now(),
+      userId: 'user-yahoshuva',
+      title: 'New Member Access Request',
+      message: `${pendingUser.email} has registered and requested access. Assign role in Members management.`,
+      type: 'task_assigned',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    // Audit Log
+    const log: ActivityLogItem = {
+      id: 'act-' + Date.now(),
+      userName: pendingUser.fullName,
+      userRole: 'Guest / Applicant',
+      action: 'ACCESS_REQUESTED',
+      entityType: 'member',
+      entityId: pendingUser.id,
+      details: { email: pendingUser.email },
+      createdAt: new Date().toISOString()
+    };
+    setActivityLogs(prev => [log, ...prev]);
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
+  };
+
+  // Pre-authorize new email & assign role by Super Admin
+  const handleAuthorizeNewEmail = (
+    email: string,
+    fullName: string,
+    role: UserSystemRole,
+    clubRole: string,
+    departmentId: string
+  ) => {
+    const dept = departments.find(d => d.id === departmentId);
+    const existingIndex = members.findIndex(m => m.email.toLowerCase() === email.toLowerCase());
+
+    const authorizedProfile: Profile = {
+      id: existingIndex >= 0 ? members[existingIndex].id : 'user-' + Date.now(),
+      email: email.toLowerCase().trim(),
+      fullName: fullName.trim(),
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      clubRole,
+      systemRole: role,
+      departmentId: dept?.id,
+      departmentName: dept?.name || 'General Membership',
+      isActive: true,
+      accessStatus: 'approved',
+      createdAt: existingIndex >= 0 ? members[existingIndex].createdAt : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+      setMembers(prev => prev.map((m, i) => i === existingIndex ? authorizedProfile : m));
+    } else {
+      setMembers(prev => [authorizedProfile, ...prev]);
+    }
+
+    // Audit Log
+    const log: ActivityLogItem = {
+      id: 'act-' + Date.now(),
+      userName: currentUser?.fullName || 'Super Admin',
+      userRole: 'Super Admin',
+      action: 'EMAIL_AUTHORIZED',
+      entityType: 'member',
+      entityId: authorizedProfile.id,
+      details: { email, role, clubRole, dept: dept?.name },
+      createdAt: new Date().toISOString()
+    };
+    setActivityLogs(prev => [log, ...prev]);
+  };
+
+  // Approve pending access request
+  const handleApprovePendingMember = (
+    memberId: string,
+    role: UserSystemRole,
+    clubRole: string,
+    departmentId: string
+  ) => {
+    const dept = departments.find(d => d.id === departmentId);
+    setMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        return {
+          ...m,
+          systemRole: role,
+          clubRole,
+          departmentId: dept?.id,
+          departmentName: dept?.name,
+          isActive: true,
+          accessStatus: 'approved',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return m;
+    }));
+
+    // Audit Log
+    const target = members.find(m => m.id === memberId);
+    const log: ActivityLogItem = {
+      id: 'act-' + Date.now(),
+      userName: currentUser?.fullName || 'Super Admin',
+      userRole: 'Super Admin',
+      action: 'ACCESS_GRANTED',
+      entityType: 'member',
+      entityId: memberId,
+      details: { email: target?.email, role, clubRole },
+      createdAt: new Date().toISOString()
+    };
+    setActivityLogs(prev => [log, ...prev]);
+  };
+
+  // Reject pending access request
+  const handleRejectPendingMember = (memberId: string) => {
+    setMembers(prev => prev.filter(m => m.id !== memberId));
   };
 
   // Task Mutations
@@ -126,7 +247,6 @@ export default function App() {
 
     setTasks(prev => [newTask, ...prev]);
 
-    // Add Audit Log
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
       userName: currentUser?.fullName || 'User',
@@ -139,7 +259,6 @@ export default function App() {
     };
     setActivityLogs(prev => [log, ...prev]);
 
-    // Send Notification to assigned member
     if (newTask.assignedMemberId) {
       const notif: NotificationItem = {
         id: 'notif-' + Date.now(),
@@ -175,7 +294,6 @@ export default function App() {
       return t;
     }));
 
-    // Update active modal if open
     if (selectedTask?.id === taskId) {
       setSelectedTask(prev => prev ? {
         ...prev,
@@ -184,7 +302,6 @@ export default function App() {
       } : null);
     }
 
-    // Add Audit Log
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
       userName: currentUser?.fullName || 'Member',
@@ -197,10 +314,9 @@ export default function App() {
     };
     setActivityLogs(prev => [log, ...prev]);
 
-    // Notify Officers
     const notif: NotificationItem = {
       id: 'notif-' + Date.now(),
-      userId: 'user-arunima', // Club President
+      userId: 'user-arunima',
       title: 'Evidence Submitted for Review',
       message: `${newEvidence.submitterName} submitted proof for task. Review required.`,
       type: 'evidence_submitted',
@@ -253,7 +369,6 @@ export default function App() {
       } : null);
     }
 
-    // Add Audit Log
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
       userName: currentUser?.fullName || 'Officer',
@@ -266,7 +381,6 @@ export default function App() {
     };
     setActivityLogs(prev => [log, ...prev]);
 
-    // Notify Member
     const targetTask = tasks.find(t => t.id === taskId);
     if (targetTask?.assignedMemberId) {
       const notif: NotificationItem = {
@@ -314,7 +428,7 @@ export default function App() {
     }
   };
 
-  // Member Management Handlers
+  // Member Role & Department Handlers
   const handleUpdateMemberRole = (memberId: string, newRole: UserSystemRole, newClubRole: string) => {
     setMembers(prev => prev.map(m => m.id === memberId ? {
       ...m,
@@ -323,7 +437,6 @@ export default function App() {
       updatedAt: new Date().toISOString()
     } : m));
 
-    // Audit Log
     const targetMember = members.find(m => m.id === memberId);
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
@@ -416,7 +529,13 @@ export default function App() {
 
   // If unauthenticated, show Login
   if (!currentUser) {
-    return <Login onLoginSuccess={handleLoginSuccess} members={members} />;
+    return (
+      <Login 
+        onLoginSuccess={handleLoginSuccess} 
+        onRequestAccess={handleRequestAccess}
+        members={members} 
+      />
+    );
   }
 
   const pendingReviewCount = tasks.filter(t => t.status === 'submitted_for_review').length;
@@ -516,6 +635,9 @@ export default function App() {
               onUpdateMemberRole={handleUpdateMemberRole}
               onUpdateMemberDepartment={handleUpdateMemberDepartment}
               onToggleMemberActive={handleToggleMemberActive}
+              onAuthorizeNewEmail={handleAuthorizeNewEmail}
+              onApprovePendingMember={handleApprovePendingMember}
+              onRejectPendingMember={handleRejectPendingMember}
             />
           )}
 
@@ -572,7 +694,7 @@ export default function App() {
         isOpen={isCreateTaskOpen}
         onClose={() => setIsCreateTaskOpen(false)}
         departments={departments}
-        members={members}
+        members={members.filter(m => m.accessStatus !== 'pending')}
         currentUser={currentUser}
         onTaskCreated={handleTaskCreated}
       />

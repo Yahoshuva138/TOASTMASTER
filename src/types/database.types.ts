@@ -35,6 +35,7 @@ export interface Profile {
   departmentId?: string;
   departmentName?: string;
   isActive: boolean;
+  accessStatus?: 'approved' | 'pending' | 'rejected';
   phone?: string;
   createdAt: string;
   updatedAt: string;
@@ -115,7 +116,6 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
-  // Local video / proof linkage for SpeakUp Scaler records
   proofThumbnail?: string;
   proofSourceUrl?: string;
 }
