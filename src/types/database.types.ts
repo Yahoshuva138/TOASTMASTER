@@ -198,3 +198,58 @@ export interface RoleSignup {
   pathwayProject?: string;
   createdAt: string;
 }
+
+// 10. MEMBER EVALUATION & FEEDBACK ITEM
+export interface MemberEvaluationItem {
+  id: string;
+  meetingNumber: number;
+  meetingTheme: string;
+  meetingDate: string;
+  speechTitle: string;
+  pathwayProject: string;
+  speakerId: string;
+  speakerName: string;
+  evaluatorId: string;
+  evaluatorName: string;
+  roleType: 'evaluated' | 'evaluating'; // Is this member the speaker or evaluator?
+  commendations: string[]; // What went well
+  recommendations: string[]; // Areas for growth
+  speechDuration?: string;
+  scoreOrRating?: string;
+  proofThumbnail?: string;
+  videoUrl?: string;
+}
+
+// 11. MEMBER EVENT PARTICIPATION HISTORY
+export interface MemberParticipationEvent {
+  id: string;
+  meetingNumber: number;
+  meetingDate: string;
+  meetingTheme: string;
+  memberId: string;
+  memberName: string;
+  rolesPlayed: string[];
+  awardsWon?: string[];
+  speechTitle?: string;
+  attendanceStatus: 'present' | 'executive' | 'guest';
+  proofThumbnail?: string;
+  videoUrl?: string;
+}
+
+// 12. PR MEMBER STORY SPOTLIGHT
+export interface PRMemberStory {
+  memberId: string;
+  memberName: string;
+  headline: string;
+  quote: string;
+  pathwayTrack: string;
+  currentLevel: string;
+  speechesCompleted: number;
+  rolesFulfilled: number;
+  awardsCount: number;
+  awards: string[];
+  instagramCaption: string;
+  linkedInPost: string;
+  spotlightHighlights: string[];
+  featuredProofImage: string;
+}

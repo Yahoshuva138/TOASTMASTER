@@ -1019,6 +1019,9 @@ export default function App() {
             <UserProfile
               currentUser={currentUser}
               tasks={tasks}
+              members={members}
+              onSelectTask={setSelectedTask}
+              onNavigate={handleNavigate}
             />
           )}
         </main>

@@ -16,7 +16,8 @@ import {
   BookOpen, 
   X,
   ExternalLink,
-  Calendar
+  Calendar,
+  Award
 } from 'lucide-react';
 import { Profile } from '../types/database.types';
 
@@ -44,6 +45,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const mainNav = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { 
+      id: 'user-profile', 
+      label: 'My Story & Evidence Hub', 
+      icon: Award, 
+      badge: 'Live',
+      badgeColor: 'bg-emerald-600 text-white font-bold'
+    },
     { id: 'meeting-agendas', label: 'Meeting Agendas & Roles', icon: Calendar },
     { id: 'all-tasks', label: 'All Tasks', icon: CheckSquare },
     { id: 'my-tasks', label: 'My Tasks', icon: UserCheck },

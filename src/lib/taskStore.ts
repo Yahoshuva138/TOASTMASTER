@@ -15,7 +15,10 @@ import {
   TaskEvidence,
   TaskReview,
   Meeting,
-  RoleSignup
+  RoleSignup,
+  MemberEvaluationItem,
+  MemberParticipationEvent,
+  PRMemberStory
 } from '../types/database.types';
 
 // 1. DEFAULT DEPARTMENTS (6 Toastmasters Departments)
@@ -1162,3 +1165,426 @@ export const INITIAL_ROLE_SIGNUPS: RoleSignup[] = [
     createdAt: '2026-11-18T12:00:00Z'
   }
 ];
+
+// 10. REAL MEMBER EVALUATIONS DATASET (Speeches Evaluated & Evaluating Others)
+export const INITIAL_MEMBER_EVALUATIONS: MemberEvaluationItem[] = [
+  {
+    id: 'eval-yk-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "A Thousand Questions of Me / SST Journey (Icebreaker)",
+    pathwayProject: 'Presentation Mastery - Level 1: Ice Breaker',
+    speakerId: 'user-yahoshuva',
+    speakerName: 'TM Yahoshuva Kesaboyina',
+    evaluatorId: 'user-arunima',
+    evaluatorName: 'Dr. Rama & TM Arunima Vats',
+    roleType: 'evaluated',
+    speechDuration: '7m 45s',
+    scoreOrRating: '9.4/10 • Best Speaker Award Winner',
+    proofThumbnail: '/proof/real_speaker1_yahoshuva.jpg',
+    videoUrl: 'file:///C:/TOASTMASTERS/ORGANIZATION/REGULAR/DAY 7(ASLEEP, BUT NOT RESTED)_17_NOV_2026/videos/SPEAKERS/SPEAKER1(YAHOSHUVA).mp4',
+    commendations: [
+      'Authentic personal vulnerability tracing school & gaming struggles to tech leadership at Scaler',
+      'High-impact visual slide presentation projected cleanly across main hall',
+      'Strong vocal passion and compelling emotional cadence during concluding reflection'
+    ],
+    recommendations: [
+      'Maintain an open 45° stance to the projection screen so left audience keeps clear sightline',
+      'Calibrate gaze scanning systematically across Left, Center, and Right quadrants for at least 3 seconds each'
+    ]
+  },
+  {
+    id: 'eval-av-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "A Single Spark",
+    pathwayProject: 'Dynamic Leadership - Level 1/2 Milestone',
+    speakerId: 'user-arunima',
+    speakerName: 'TM Arunima Vats',
+    evaluatorId: 'user-harshitha',
+    evaluatorName: 'TM Harshitha',
+    roleType: 'evaluated',
+    speechDuration: '6m 30s',
+    scoreOrRating: '9.1/10 • Commended',
+    proofThumbnail: '/proof/real_speaker2_arunima.jpg',
+    videoUrl: 'file:///C:/TOASTMASTERS/ORGANIZATION/REGULAR/DAY 7(ASLEEP, BUT NOT RESTED)_17_NOV_2026/videos/SPEAKERS/SPEAKER2(ARUNIMA).mp4',
+    commendations: [
+      'Outstanding rhetorical depth, poise, and commanding stage posture',
+      'Inspiring central message: "It won’t require two storms, just a single spark"',
+      'Articulate voice modulation during personal anecdotes'
+    ],
+    recommendations: [
+      'Pace transitions slightly slower when transitioning between philosophical analogies',
+      'Use deliberate pauses to let audience digest key punchlines'
+    ]
+  },
+  {
+    id: 'eval-vd-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "The Art of Balance",
+    pathwayProject: 'Presentation Mastery - Level 1',
+    speakerId: 'user-vedali',
+    speakerName: 'TM Vedali',
+    evaluatorId: 'user-rehan',
+    evaluatorName: 'TM Rehan / TM Kalai',
+    roleType: 'evaluated',
+    speechDuration: '6m 10s',
+    scoreOrRating: '8.8/10 • Commended',
+    proofThumbnail: '/proof/real_speaker3_vedali.jpg',
+    commendations: [
+      'Deeply relatable exploration of academic pressure and student well-being',
+      'Natural, expressive hand gestures throughout the speech',
+      'Calm, grounded presence on the Scaler Hall stage'
+    ],
+    recommendations: [
+      'Elevate vocal projection during the emotional climax in section two',
+      'Step out from the center rostrum to command lateral stage space'
+    ]
+  },
+  {
+    id: 'eval-rh-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "Debugging Mindsets",
+    pathwayProject: 'Innovative Planning - Level 1',
+    speakerId: 'user-rehan',
+    speakerName: 'TM Rehan',
+    evaluatorId: 'user-yahoshuva',
+    evaluatorName: 'TM Krishna / TM Yahoshuva',
+    roleType: 'evaluated',
+    speechDuration: '6m 45s',
+    scoreOrRating: '9.0/10 • Commended',
+    proofThumbnail: '/proof/real_speaker5_rehan.jpg',
+    commendations: [
+      'Sharp technical analogies linking software debugging with emotional resilience',
+      'Well-timed humor and audience interaction',
+      'Solid eye contact across both front corners of the room'
+    ],
+    recommendations: [
+      'Anchor concluding call-to-action firmly without rushing before timer green card',
+      'Smooth out transitions between programming terms and personal life takeaways'
+    ]
+  },
+  {
+    id: 'eval-pk-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "The Infinite Loop",
+    pathwayProject: 'Persuasive Influence - Level 1',
+    speakerId: 'user-prakrit',
+    speakerName: 'TM Prakrit',
+    evaluatorId: 'user-shakthi',
+    evaluatorName: 'TM Shreyansh / TM Shakthi',
+    roleType: 'evaluated',
+    speechDuration: '5m 55s',
+    scoreOrRating: '8.7/10 • Commended',
+    proofThumbnail: '/proof/real_speaker6_prakrit.jpg',
+    commendations: [
+      'Memorable opening quote and dynamic facial expressions',
+      'Clean enunciation and disciplined pacing within the qualifying green window'
+    ],
+    recommendations: [
+      'Ground foot movement to prevent subconscious backward rocking during key points',
+      'Integrate more descriptive vocal variety when describing turning points'
+    ]
+  },
+  {
+    id: 'eval-yk-evaluator-01',
+    meetingNumber: 4,
+    meetingTheme: 'Error 404: Not Found (Day 6)',
+    meetingDate: '2026-11-10',
+    speechTitle: "Evaluate to Motivate Masterclass & Debate Assessment",
+    pathwayProject: 'Executive Leadership & Evaluation Practice',
+    speakerId: 'user-shakthi',
+    speakerName: 'TM Shakthi Sivapriya',
+    evaluatorId: 'user-yahoshuva',
+    evaluatorName: 'TM Yahoshuva Kesaboyina',
+    roleType: 'evaluating',
+    speechDuration: '50m Masterclass',
+    scoreOrRating: 'Master Evaluator Review',
+    proofThumbnail: '/proof/real_day6_debate.jpg',
+    commendations: [
+      'Gave actionable feedback during the live T-Chart evaluation drills',
+      'Praised interactive audience engagement and practical sandwich technique demonstrations'
+    ],
+    recommendations: [
+      'Encouraged distributing printed 1-page evaluation rubrics for faster note-taking'
+    ]
+  },
+  {
+    id: 'eval-rh-evaluator-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "Speech 3 Live Evaluation",
+    pathwayProject: 'Evaluation & Feedback - Level 1',
+    speakerId: 'user-vedali',
+    speakerName: 'TM Vedali',
+    evaluatorId: 'user-rehan',
+    evaluatorName: 'TM Rehan',
+    roleType: 'evaluating',
+    speechDuration: '3m 15s',
+    scoreOrRating: 'Best Evaluator Award Winner',
+    proofThumbnail: '/proof/real_eval_rehan.jpg',
+    commendations: [
+      'Structured evaluation following Toastmasters classic Commend-Recommend-Commend model',
+      'Specific timestamps and exact quotes cited from speaker notes'
+    ],
+    recommendations: [
+      'Demonstrated physical gesture example on stage for speaker to replicate'
+    ]
+  },
+  {
+    id: 'eval-av-evaluator-01',
+    meetingNumber: 5,
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    meetingDate: '2026-11-17',
+    speechTitle: "Presidential Gavel Evaluation & Meeting Summary",
+    pathwayProject: 'General Evaluation & Presidential Review',
+    speakerId: 'user-yahoshuva',
+    speakerName: 'TM Yahoshuva Kesaboyina',
+    evaluatorId: 'user-arunima',
+    evaluatorName: 'TM Arunima Vats',
+    roleType: 'evaluating',
+    speechDuration: '4m 00s',
+    scoreOrRating: 'Executive Sign-Off',
+    proofThumbnail: '/proof/real_po_arunima_closing.jpg',
+    commendations: [
+      'Commended courage in sharing deep personal struggles on stage',
+      'Highlighted tremendous club growth since initial charter installation'
+    ],
+    recommendations: [
+      'Advised continuing 45° stance calibration in upcoming division contests'
+    ]
+  }
+];
+
+// 11. REAL MEMBER EVENT PARTICIPATION HISTORY (Meetings 1 to 5)
+export const INITIAL_MEMBER_PARTICIPATION: MemberParticipationEvent[] = [
+  {
+    id: 'part-yk-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-yahoshuva',
+    memberName: 'TM Yahoshuva Kesaboyina',
+    rolesPlayed: ['Prepared Speaker 1 (Icebreaker)', 'Secretary & MoM Recorder'],
+    awardsWon: ['🏆 Best Speaker Winner', '🎖️ Level 1 Milestone Pin'],
+    speechTitle: 'A Thousand Questions of Me / SST Journey',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_speaker1_yahoshuva.jpg',
+    videoUrl: 'file:///C:/TOASTMASTERS/ORGANIZATION/REGULAR/DAY 7(ASLEEP, BUT NOT RESTED)_17_NOV_2026/videos/SPEAKERS/SPEAKER1(YAHOSHUVA).mp4'
+  },
+  {
+    id: 'part-yk-04',
+    meetingNumber: 4,
+    meetingDate: '2026-11-10',
+    meetingTheme: 'Error 404: Not Found (Day 6)',
+    memberId: 'user-yahoshuva',
+    memberName: 'TM Yahoshuva Kesaboyina',
+    rolesPlayed: ['Debate Team Lead', 'Table Topics Speaker', 'Secretary Recorder'],
+    awardsWon: ['⭐ Best Debate Team'],
+    speechTitle: 'Oxford Parliamentary Debate on AI & Human Craft',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_day6_debate.jpg'
+  },
+  {
+    id: 'part-yk-01',
+    meetingNumber: 1,
+    meetingDate: '2026-10-01',
+    meetingTheme: 'Charter Installation Ceremony',
+    memberId: 'user-yahoshuva',
+    memberName: 'TM Yahoshuva Kesaboyina',
+    rolesPlayed: ['Inducted Club Secretary', 'Charter Executive Member'],
+    awardsWon: ['📜 Official Club Charter Signatory'],
+    attendanceStatus: 'executive',
+    proofThumbnail: '/proof/installation_ceremony_proof.jpeg'
+  },
+  {
+    id: 'part-av-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-arunima',
+    memberName: 'TM Arunima Vats',
+    rolesPlayed: ['Presiding Officer (Gavel Open/Close)', 'Prepared Speaker 2'],
+    awardsWon: ['🎖️ Executive Leadership Recognition'],
+    speechTitle: 'A Single Spark',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_po_arunima.jpg'
+  },
+  {
+    id: 'part-sh-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-shakthi',
+    memberName: 'TM Shakthi Sivapriya',
+    rolesPlayed: ['VP Education Chair', 'Evaluations Coordinator'],
+    awardsWon: ['⭐ Best Role Player'],
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_ge_feedback.jpg'
+  },
+  {
+    id: 'part-sh-04',
+    meetingNumber: 4,
+    meetingDate: '2026-11-10',
+    meetingTheme: 'Error 404: Not Found (Day 6)',
+    memberId: 'user-shakthi',
+    memberName: 'TM Shakthi Sivapriya',
+    rolesPlayed: ['Masterclass Trainer (Evaluate to Motivate)', 'Table Topics Evaluator'],
+    awardsWon: ['⭐ Educational Masterclass Excellence'],
+    speechTitle: 'Evaluate to Motivate: T-Chart & Sandwich Evaluation Workshop',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_day6_shakthi_training.jpg'
+  },
+  {
+    id: 'part-vd-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-vedali',
+    memberName: 'TM Vedali',
+    rolesPlayed: ['Prepared Speaker 3'],
+    speechTitle: 'The Art of Balance',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_speaker3_vedali.jpg'
+  },
+  {
+    id: 'part-rh-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-rehan',
+    memberName: 'TM Rehan',
+    rolesPlayed: ['Prepared Speaker 5', 'Speech 3 Evaluator'],
+    awardsWon: ['🥇 Best Evaluator Winner'],
+    speechTitle: 'Debugging Mindsets',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_eval_rehan.jpg'
+  },
+  {
+    id: 'part-pk-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-prakrit',
+    memberName: 'TM Prakrit',
+    rolesPlayed: ['Prepared Speaker 6'],
+    speechTitle: 'The Infinite Loop',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_speaker6_prakrit.jpg'
+  },
+  {
+    id: 'part-as-05',
+    meetingNumber: 5,
+    meetingDate: '2026-11-17',
+    meetingTheme: 'Asleep, But Not Rested (Day 7)',
+    memberId: 'user-ashish',
+    memberName: 'TM Ashish Patel',
+    rolesPlayed: ['Sergeant at Arms (Call to Order)', 'Timing Card Master'],
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_saa_ashish.jpg'
+  },
+  {
+    id: 'part-ar-06',
+    meetingNumber: 6,
+    meetingDate: '2026-11-21',
+    meetingTheme: 'Error 404: The Golden Repair (Upcoming)',
+    memberId: 'user-abdulrahman',
+    memberName: 'Abdul Rahman',
+    rolesPlayed: ['Table Topics Participant', 'Ah-Counter Trainee'],
+    speechTitle: 'Stepping Into the Spotlight (Rehearsal)',
+    attendanceStatus: 'present',
+    proofThumbnail: '/proof/real_day6_shyam_harkmaster.jpg'
+  }
+];
+
+// 12. REAL PR MEMBER STORIES & SPOTLIGHT GENERATOR
+export const INITIAL_PR_MEMBER_STORIES: PRMemberStory[] = [
+  {
+    memberId: 'user-yahoshuva',
+    memberName: 'TM Yahoshuva Kesaboyina',
+    headline: 'From School Gaming Struggles to Best Speaker Winner & Club Secretary',
+    quote: "True confidence isn't the absence of fear—it is standing on the Scaler Hall stage and turning vulnerability into authentic inspiration.",
+    pathwayTrack: 'Presentation Mastery',
+    currentLevel: 'Level 1 Milestone Achieved',
+    speechesCompleted: 2,
+    rolesFulfilled: 6,
+    awardsCount: 3,
+    awards: ['🏆 Best Speaker (Meeting 5)', '⭐ Best Debate Team Lead (Meeting 4)', '📜 Charter Signatory'],
+    spotlightHighlights: [
+      'Delivered breakthrough Level 1 Icebreaker speech "A Thousand Questions of Me" earning Best Speaker honors.',
+      'Authored and archived the master Minutes of the Meeting (MoM) spanning all 5 club meetings.',
+      'Engineered the Toastmasters Task Hub platform for club-wide accountability and proof verification.'
+    ],
+    instagramCaption: `🌟 MEMBER SPOTLIGHT: TM Yahoshuva Kesaboyina! 🎤✨\n\nFrom battling stage anxiety and gaming distractions to taking home the 🏆 BEST SPEAKER AWARD at Meeting 5, TM Yahoshuva proves that public speaking is a superpower you build turn-by-turn!\n\nAs our dedicated Club Secretary, he keeps our club records and Task Hub running flawlessly. Swipe to see his winning stage moment at Scaler Innovation Hall! 📸\n\n#Toastmasters #SpeakUpScaler #WhereLeadersAreMade #PublicSpeaking #LeadershipInAction`,
+    linkedInPost: `Proud to spotlight TM Yahoshuva Kesaboyina, Club Secretary at SpeakUp Scaler Toastmasters Club #28681022.\n\nAt our recent Meeting 5 ("Asleep, But Not Rested"), Yahoshuva delivered an exceptional Level 1 Presentation Mastery speech titled "A Thousand Questions of Me", tracing his personal journey from early academic hurdles to founding tech conviction at Scaler School of Technology. His authenticity and visual stagecraft earned him the Best Speaker Award!\n\nBeyond the lectern, Yahoshuva drives club operations as our Secretary and Lead Developer of the Toastmasters Task Hub. Congratulations Yahoshuva on setting the benchmark for proof-based leadership!\n\n#ToastmastersInternational #PublicSpeaking #StudentLeadership #ScalerSchoolOfTechnology`,
+    featuredProofImage: '/proof/real_speaker1_yahoshuva.jpg'
+  },
+  {
+    memberId: 'user-arunima',
+    memberName: 'TM Arunima Vats',
+    headline: 'Presiding Officer, Inspiring Orator & Strategic Club Champion',
+    quote: "It won’t require two storms—just a single spark to awaken the leader within every speaker.",
+    pathwayTrack: 'Dynamic Leadership',
+    currentLevel: 'Level 2 Milestone',
+    speechesCompleted: 3,
+    rolesFulfilled: 7,
+    awardsCount: 2,
+    awards: ['👑 Presiding Officer Excellence', '🎖️ Charter President Honor'],
+    spotlightHighlights: [
+      'Delivered celebrated Speech 2 "A Single Spark" exploring resilience and leadership conviction.',
+      'Opened and closed 5 consecutive club sessions with inspiring presidential gavel addresses.',
+      'Mentored incoming speakers and evaluated Icebreakers with constructive, actionable insights.'
+    ],
+    instagramCaption: `👑 PRESIDENTIAL SPOTLIGHT: TM Arunima Vats! 🌟\n\nLeading from the front! TM Arunima inspires our club with every gavel drop and milestone speech. Her recent address "A Single Spark" reminded us all that leadership begins with a single brave decision.\n\nDrop a 👏 in the comments to celebrate our fearless Club President!\n\n#SpeakUpScaler #ToastmastersClub #WomenInLeadership #WhereLeadersAreMade`,
+    linkedInPost: `Leadership in action: Spotlighting our Club President, TM Arunima Vats.\n\nUnder Arunima's strategic leadership, SpeakUp Scaler Toastmasters Club (#28681022) has chartered 6 active committees and hosted over 25+ student speakers. Her recent milestone speech "A Single Spark" demonstrated the poise, rhetorical depth, and vision that define exemplary executive leadership.\n\nThank you Arunima for empowering our club community every week!\n\n#Leadership #Toastmasters #PublicSpeaking #ExecutiveLeadership`,
+    featuredProofImage: '/proof/real_speaker2_arunima.jpg'
+  },
+  {
+    memberId: 'user-rehan',
+    memberName: 'TM Rehan',
+    headline: 'Mastering the Stage as Both Orator and Best Evaluator Winner',
+    quote: "Constructive feedback isn’t about finding flaws; it’s about polishing diamonds until they shine.",
+    pathwayTrack: 'Innovative Planning',
+    currentLevel: 'Level 1 Milestone',
+    speechesCompleted: 2,
+    rolesFulfilled: 5,
+    awardsCount: 1,
+    awards: ['🥇 Best Evaluator (Meeting 5 Day 7)'],
+    spotlightHighlights: [
+      'Clinched the Best Evaluator award at Meeting 5 with systematic, empathetic T-Chart feedback.',
+      'Delivered prepared speech "Debugging Mindsets" combining programming and life philosophy.'
+    ],
+    instagramCaption: `🥇 BEST EVALUATOR: TM Rehan! 🔍✨\n\nEvaluating a speech takes empathy, sharp ears, and the ability to inspire growth. At Meeting 5, TM Rehan delivered a masterclass in constructive feedback, walking away with the Best Evaluator ribbon!\n\nCongratulations Rehan on helping our speakers elevate their game! 🚀\n\n#Toastmasters #EvaluationToMotivate #SpeakUpScaler`,
+    linkedInPost: `Celebrating excellence in constructive feedback: TM Rehan was voted Best Evaluator at Meeting 5 of SpeakUp Scaler Toastmasters Club.\n\nRehan's structured evaluation of Speech 3 demonstrated why Toastmasters is the world leader in communication training—blending specific praise with actionable growth recommendations. Well done Rehan!\n\n#ConstructiveFeedback #Toastmasters #CommunicationSkills`,
+    featuredProofImage: '/proof/real_eval_rehan.jpg'
+  },
+  {
+    memberId: 'user-abdulrahman',
+    memberName: 'Abdul Rahman',
+    headline: 'Emerging Toastmaster: Stepping Into the Spotlight with Dedication',
+    quote: "Every seasoned speaker once sat in the audience wondering if they had what it takes. Today, I take the stage.",
+    pathwayTrack: 'Presentation Mastery',
+    currentLevel: 'Level 1 Applicant & Trainee',
+    speechesCompleted: 0,
+    rolesFulfilled: 2,
+    awardsCount: 0,
+    awards: ['🌱 Rising Star Nominee'],
+    spotlightHighlights: [
+      'Drafting debut Icebreaker speech "Stepping Into the Spotlight" with mentor TM Yahoshuva.',
+      'Active participant in impromptu Table Topics and timing logs.'
+    ],
+    instagramCaption: `🌱 RISING TALENT SPOTLIGHT: Abdul Rahman! 🎙️\n\nWelcoming Abdul Rahman as he prepares for his debut Icebreaker speech at SpeakUp Scaler! Stepping into the spotlight takes immense courage, and our entire club is cheering him on! 🙌\n\nLeave your words of encouragement for Abdul below! 💬✨\n\n#SpeakUpScaler #ToastmastersJourney #GrowthMindset`,
+    linkedInPost: `Welcome to the lectern, Abdul Rahman!\n\nAt SpeakUp Scaler Toastmasters Club, we take pride in mentoring the next generation of communicators and engineers. Abdul is currently rehearsing his Level 1 Icebreaker speech and taking on vital meeting functional roles.\n\nExcited to witness your public speaking journey, Abdul!\n\n#Mentorship #Toastmasters #PublicSpeakingJourney`,
+    featuredProofImage: '/proof/real_day6_shyam_harkmaster.jpg'
+  }
+];
+
