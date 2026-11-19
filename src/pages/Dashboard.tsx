@@ -8,11 +8,15 @@ import {
   TrendingUp, 
   Calendar, 
   ArrowRight, 
-  Building2,
-  ShieldCheck,
-  Paperclip
+  Building2, 
+  ShieldCheck, 
+  Paperclip,
+  UserCheck,
+  UserX,
+  Mail,
+  Check
 } from 'lucide-react';
-import { Task, Profile, Department, ActivityLogItem } from '../types/database.types';
+import { Task, Profile, Department, ActivityLogItem, UserSystemRole } from '../types/database.types';
 import { formatDueDateTime, isTaskOverdue } from '../lib/dateUtils';
 
 interface DashboardProps {
@@ -21,6 +25,9 @@ interface DashboardProps {
   currentUser: Profile;
   activityLogs: ActivityLogItem[];
   pendingMembersCount?: number;
+  pendingMembers?: Profile[];
+  onApprovePendingMember?: (memberId: string, role: UserSystemRole, clubRole: string, departmentId: string) => void;
+  onRejectPendingMember?: (memberId: string) => void;
   onNavigate: (page: string) => void;
   onSelectTask: (task: Task) => void;
   onCreateTaskClick: () => void;
@@ -32,10 +39,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
   currentUser,
   activityLogs,
   pendingMembersCount = 0,
+  pendingMembers = [],
+  onApprovePendingMember,
+  onRejectPendingMember,
   onNavigate,
   onSelectTask,
   onCreateTaskClick
 }) => {
+  // State for inline quick-assignment roles on dashboard
+  const [selectedRoles, setSelectedRoles] = React.useState<Record<string, { role: UserSystemRole; deptId: string }>>({});
+  const [approvedNotification, setApprovedNotification] = React.useState<string | null>(null);
+
+  const getClubTitleForRole = (r: UserSystemRole): string => {
+    switch (r) {
+      case 'president': return 'Club President';
+      case 'vpe': return 'Vice President Education';
+      case 'vpm': return 'Vice President Membership';
+      case 'vppr': return 'Vice President Public Relations';
+      case 'secretary': return 'Club Secretary';
+      case 'treasurer': return 'Treasurer';
+      case 'saa': return 'Sergeant at Arms';
+      case 'super_admin': return 'Super Administrator';
+      default: return 'Club Member';
+    }
+  };
   // Compute real metrics directly from database state
   const totalTasks = tasks.length;
   const notStarted = tasks.filter(t => t.status === 'not_started').length;
@@ -54,33 +81,157 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* Super Admin Alert: Pending Member Access Requests */}
-      {currentUser.systemRole === 'super_admin' && pendingMembersCount > 0 && (
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
-          <div className="flex items-start sm:items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center flex-shrink-0 text-amber-700">
-              <Clock className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-brand font-black text-sm text-amber-950">
-                  {pendingMembersCount} Pending Member Access Request{pendingMembersCount > 1 ? 's' : ''}
-                </span>
-                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">
-                  Action Required
-                </span>
-              </div>
-              <p className="text-xs text-amber-800 mt-0.5">
-                New user(s) requested access from the login portal. Assign their club role and department to grant entry.
-              </p>
-            </div>
+      {/* Success Notification after inline approval */}
+      {approvedNotification && (
+        <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm flex items-center justify-between text-emerald-900 animate-in fade-in">
+          <div className="flex items-center space-x-2 text-xs font-bold">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <span>{approvedNotification}</span>
           </div>
-          <button
-            onClick={() => onNavigate('members')}
-            className="w-full sm:w-auto px-4 py-2 bg-[#772432] hover:bg-[#5A1A25] text-white font-brand font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center space-x-1.5 flex-shrink-0"
+          <button 
+            onClick={() => setApprovedNotification(null)}
+            className="text-xs text-emerald-700 hover:text-emerald-950 font-bold px-2 py-1"
           >
-            <span>Review & Grant Access →</span>
+            Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Super Admin Direct Action: Pending Member Access Requests */}
+      {currentUser.systemRole === 'super_admin' && (pendingMembers.length > 0 || pendingMembersCount > 0) && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm space-y-4 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-amber-200 pb-3">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-200/80 border border-amber-400 flex items-center justify-center text-amber-900">
+                <Clock className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-brand font-bold text-sm text-amber-950">
+                    {pendingMembers.length || pendingMembersCount} Pending Member Access Request{(pendingMembers.length || pendingMembersCount) > 1 ? 's' : ''}
+                  </h3>
+                  <span className="text-[10px] bg-[#772432] text-[#F2DF74] font-bold px-2 py-0.5 rounded-full">
+                    Action Required
+                  </span>
+                </div>
+                <p className="text-xs text-amber-900/80 mt-0.5">
+                  Approve applicants and assign their club role below to grant immediate access.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('members')}
+              className="text-xs font-bold text-[#004165] hover:text-[#772432] transition flex items-center space-x-1"
+            >
+              <span>View Roster in Club Members →</span>
+            </button>
+          </div>
+
+          {/* Pending Members List */}
+          <div className="space-y-3">
+            {pendingMembers.map(pending => {
+              const assigned = selectedRoles[pending.id] || {
+                role: 'member' as UserSystemRole,
+                deptId: departments[0]?.id || 'dept-edu'
+              };
+
+              return (
+                <div
+                  key={pending.id}
+                  className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-xs text-slate-900">{pending.fullName}</span>
+                      <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        Pending Approval
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono flex items-center space-x-1.5">
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{pending.email}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 block">
+                      Requested: {new Date(pending.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, {new Date(pending.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {/* Inline Role & Department Controls + Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Club Role</label>
+                      <select
+                        value={assigned.role}
+                        onChange={(e) => {
+                          const r = e.target.value as UserSystemRole;
+                          setSelectedRoles(prev => ({
+                            ...prev,
+                            [pending.id]: { ...assigned, role: r }
+                          }));
+                        }}
+                        className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-[#004165]"
+                      >
+                        <option value="member">Club Member</option>
+                        <option value="vppr">VP Public Relations (VPPR)</option>
+                        <option value="vpe">VP Education (VPE)</option>
+                        <option value="vpm">VP Membership (VPM)</option>
+                        <option value="secretary">Secretary</option>
+                        <option value="treasurer">Treasurer</option>
+                        <option value="saa">Sergeant at Arms (SAA)</option>
+                        <option value="president">Club President</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Department</label>
+                      <select
+                        value={assigned.deptId}
+                        onChange={(e) => {
+                          setSelectedRoles(prev => ({
+                            ...prev,
+                            [pending.id]: { ...assigned, deptId: e.target.value }
+                          }));
+                        }}
+                        className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#004165]"
+                      >
+                        {departments.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5 pt-3.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onApprovePendingMember) {
+                            const title = getClubTitleForRole(assigned.role);
+                            onApprovePendingMember(pending.id, assigned.role, title, assigned.deptId);
+                            setApprovedNotification(`Granted ${title} access to ${pending.fullName} (${pending.email})!`);
+                          }
+                        }}
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-brand font-bold text-xs rounded-lg transition shadow-sm flex items-center space-x-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Accept & Grant Access</span>
+                      </button>
+
+                      {onRejectPendingMember && (
+                        <button
+                          type="button"
+                          onClick={() => onRejectPendingMember(pending.id)}
+                          className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-lg border border-red-200 transition"
+                          title="Decline request"
+                        >
+                          Decline
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

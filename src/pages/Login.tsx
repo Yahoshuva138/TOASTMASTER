@@ -9,9 +9,10 @@ import {
   UserCheck, 
   CheckCircle2, 
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Check
 } from 'lucide-react';
-import { Profile } from '../types/database.types';
+import { Profile, Department, UserSystemRole } from '../types/database.types';
 import { 
   syncAccessRequestToCloud, 
   checkCloudApprovalStatus, 
@@ -22,15 +23,19 @@ import {
 interface LoginProps {
   onLoginSuccess: (user: Profile) => void;
   onRequestAccess: (pendingUser: Profile) => void;
+  onApprovePendingMember?: (memberId: string, role: UserSystemRole, clubRole: string, departmentId: string) => void;
   members: Profile[];
+  departments?: Department[];
 }
 
 export const Login: React.FC<LoginProps> = ({
   onLoginSuccess,
   onRequestAccess,
-  members
+  onApprovePendingMember,
+  members,
+  departments = []
 }) => {
-  const [activeTab, setActiveTab] = useState<'google' | 'pin'>('google');
+  const [activeTab, setActiveTab] = useState<'google' | 'pin' | 'admin'>('google');
   const [googleEmail, setGoogleEmail] = useState('');
   const [pinEmail, setPinEmail] = useState('');
   const [pin, setPin] = useState('');
@@ -39,8 +44,10 @@ export const Login: React.FC<LoginProps> = ({
 
   // Quick Super Admin approval state on pending screen
   const [instantRole, setInstantRole] = useState('Club Member');
-  const [instantPin, setInstantPin] = useState('');
   const [instantError, setInstantError] = useState('');
+  const [adminActionNotice, setAdminActionNotice] = useState('');
+
+  const pendingMembers = members.filter(m => m.accessStatus === 'pending');
 
   // Check if an email belongs to Super Admin
   const isSuperAdminEmail = (rawEmail: string) => {
@@ -162,22 +169,29 @@ export const Login: React.FC<LoginProps> = ({
     if (!pendingUser) return;
     setInstantError('');
 
-    if (instantPin !== '1234' && instantPin !== 'admin') {
-      setInstantError('Invalid Super Admin PIN. Enter 1234.');
-      return;
-    }
-
+    const sysRole = getSystemRoleFromTitle(instantRole);
     const approvedProfile: Profile = {
       ...pendingUser,
       clubRole: instantRole,
-      systemRole: getSystemRoleFromTitle(instantRole),
+      systemRole: sysRole,
+      departmentId: departments[0]?.id || 'dept-edu',
+      departmentName: departments[0]?.name || 'Education & Meeting Roles',
       isActive: true,
       accessStatus: 'approved',
       updatedAt: new Date().toISOString()
     };
 
-    // Update cloud and local state
+    // Update parent state & cloud state
+    if (onApprovePendingMember) {
+      onApprovePendingMember(
+        pendingUser.id,
+        sysRole,
+        instantRole,
+        departments[0]?.id || 'dept-edu'
+      );
+    }
     grantCloudMemberAccess(pendingUser.email, instantRole, pendingUser.fullName);
+
     setPendingUser(null);
     onLoginSuccess(approvedProfile);
   };
@@ -248,30 +262,30 @@ export const Login: React.FC<LoginProps> = ({
       {/* Main Login Card */}
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
         
-        {/* Navigation Tabs: Google Sign-In vs PIN */}
-        <div className="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 text-xs font-bold">
+        {/* Navigation Tabs: Member Google vs PIN vs Super Admin Portal */}
+        <div className="grid grid-cols-3 bg-slate-100 p-1.5 border-b border-slate-200 text-xs font-bold">
           <button
             type="button"
-            onClick={() => { setActiveTab('google'); setError(''); }}
-            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-2 ${
+            onClick={() => { setActiveTab('google'); setError(''); setAdminActionNotice(''); }}
+            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
               activeTab === 'google'
                 ? 'bg-white text-[#004165] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
-            <span>Google Login</span>
+            <span>Google</span>
           </button>
 
           <button
             type="button"
-            onClick={() => { setActiveTab('pin'); setError(''); }}
-            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-2 ${
+            onClick={() => { setActiveTab('pin'); setError(''); setAdminActionNotice(''); }}
+            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
               activeTab === 'pin'
                 ? 'bg-white text-[#004165] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -279,6 +293,24 @@ export const Login: React.FC<LoginProps> = ({
           >
             <Lock className="w-3.5 h-3.5 text-[#772432]" />
             <span>Email & PIN</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setActiveTab('admin'); setError(''); setAdminActionNotice(''); }}
+            className={`py-2.5 rounded-xl transition flex items-center justify-center space-x-1 sm:space-x-1.5 ${
+              activeTab === 'admin'
+                ? 'bg-white text-[#772432] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#772432]" />
+            <span>Admin</span>
+            {pendingMembers.length > 0 && (
+              <span className="w-4 h-4 rounded-full bg-[#772432] text-[#F2DF74] text-[9px] font-black flex items-center justify-center">
+                {pendingMembers.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -289,6 +321,13 @@ export const Login: React.FC<LoginProps> = ({
             <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center space-x-2 border border-red-200 animate-in fade-in">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {adminActionNotice && (
+            <div className="p-3 bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-xl flex items-center space-x-2 border border-emerald-300 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>{adminActionNotice}</span>
             </div>
           )}
 
@@ -334,18 +373,21 @@ export const Login: React.FC<LoginProps> = ({
                 </button>
 
                 {/* Instant Super Admin Unlock Tool */}
-                <div className="mt-3 pt-3 border-t border-slate-200 text-left bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
-                  <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-[#004165]">
-                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
-                    <span>Super Admin: Approve & Assign Role Now</span>
+                <div className="mt-3 pt-3 border-t border-slate-200 text-left bg-amber-50/80 p-3.5 rounded-xl border-2 border-amber-300 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-[#004165]">
+                      <ShieldCheck className="w-4 h-4 text-[#772432]" />
+                      <span>Super Admin Action (TM Yahoshuva Kesaboyina)</span>
+                    </div>
+                    <span className="text-[9px] bg-[#772432] text-[#F2DF74] font-bold px-1.5 py-0.2 rounded">
+                      Quick Grant
+                    </span>
                   </div>
 
-                  {instantError && (
-                    <p className="text-[11px] text-red-600 font-semibold">{instantError}</p>
-                  )}
-
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Select Role</label>
+                    <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                      Assign Role to {pendingUser.fullName || 'Member'}:
+                    </label>
                     <select
                       value={instantRole}
                       onChange={e => setInstantRole(e.target.value)}
@@ -362,24 +404,13 @@ export const Login: React.FC<LoginProps> = ({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Super Admin PIN (1234)</label>
-                    <input
-                      type="password"
-                      placeholder="Enter Admin PIN 1234"
-                      value={instantPin}
-                      onChange={e => setInstantPin(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white"
-                    />
-                  </div>
-
                   <button
                     type="button"
                     onClick={handleInstantApprove}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-brand font-bold text-xs rounded-lg transition shadow-sm flex items-center justify-center space-x-1.5"
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-brand font-bold text-xs rounded-lg transition shadow flex items-center justify-center space-x-1.5"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Verify PIN & Grant Access Immediately</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Approve & Grant Immediate Access as {instantRole}</span>
                   </button>
                 </div>
 
@@ -412,6 +443,100 @@ export const Login: React.FC<LoginProps> = ({
                 >
                   ← Sign In with a Different Account
                 </button>
+              </div>
+            </div>
+          ) : activeTab === 'admin' ? (
+            /* TAB 3: Super Admin Portal & Direct Approvals Queue */
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-[#002B44] to-[#004165] text-white p-4 rounded-2xl border border-[#001D2E] space-y-3 shadow-sm">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                    <ShieldCheck className="w-6 h-6 text-[#F2DF74]" />
+                  </div>
+                  <div>
+                    <h4 className="font-brand font-bold text-sm text-white">Super Admin Quick Sign-In</h4>
+                    <p className="text-[11px] text-slate-300">TM Yahoshuva Kesaboyina (Club Secretary & Executive)</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => authenticateEmail('kesaboyinayahoshuva@gmail.com')}
+                  className="w-full py-2.5 bg-[#F2DF74] hover:bg-[#e0cd62] active:scale-95 text-[#002B44] font-brand font-bold text-xs rounded-xl transition shadow flex items-center justify-center space-x-1.5"
+                >
+                  <span>Enter Executive Portal as Super Admin →</span>
+                </button>
+              </div>
+
+              {/* Pending Requests Queue Card right on Login screen */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-slate-900">
+                    <Clock className="w-4 h-4 text-amber-600" />
+                    <span>Pending Access Requests ({pendingMembers.length})</span>
+                  </div>
+                  {pendingMembers.length > 0 && (
+                    <span className="text-[9px] bg-[#772432] text-white font-bold px-2 py-0.5 rounded-full">
+                      Needs Action
+                    </span>
+                  )}
+                </div>
+
+                {pendingMembers.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic py-3 text-center">
+                    No pending member requests. All registered users are approved.
+                  </p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {pendingMembers.map(pending => (
+                      <div 
+                        key={pending.id} 
+                        className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-bold text-xs text-slate-900 block">{pending.fullName}</span>
+                            <span className="text-[11px] text-slate-500 font-mono">{pending.email}</span>
+                          </div>
+                          <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                            Pending
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onApprovePendingMember) {
+                                onApprovePendingMember(
+                                  pending.id, 
+                                  'member', 
+                                  'Club Member', 
+                                  departments[0]?.id || 'dept-edu'
+                                );
+                              }
+                              grantCloudMemberAccess(pending.email, 'Club Member', pending.fullName);
+                              setAdminActionNotice(`Granted Club Member access to ${pending.fullName}! They can now log in.`);
+                            }}
+                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-brand font-bold text-xs rounded-lg transition shadow-sm flex items-center justify-center space-x-1"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Accept as Club Member</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => authenticateEmail(pending.email)}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"
+                            title="Sign in as this user to test"
+                          >
+                            Sign In
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : activeTab === 'google' ? (

@@ -25,6 +25,7 @@ interface NavbarProps {
   currentPage?: string;
   isMobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
+  pendingMembersCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,7 +38,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   currentPage = 'dashboard',
   isMobileMenuOpen = false,
-  onToggleMobileMenu
+  onToggleMobileMenu,
+  pendingMembersCount = 0
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -167,6 +169,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Right: Action Buttons, Notifications & User Pill */}
             <div className="flex items-center space-x-1.5 sm:space-x-3">
               
+              {/* Super Admin Quick Pending Approvals Pill */}
+              {currentUser.systemRole === 'super_admin' && pendingMembersCount > 0 && (
+                <button
+                  onClick={() => onNavigate('members')}
+                  className="flex items-center space-x-1 sm:space-x-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-brand text-xs sm:text-sm font-bold transition shadow-sm animate-pulse border border-amber-600"
+                  title="Review & Grant Access to Pending Member Requests"
+                >
+                  <ShieldCheck className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+                  <span className="hidden xs:inline sm:inline">{pendingMembersCount} Request{pendingMembersCount > 1 ? 's' : ''}</span>
+                  <span className="xs:hidden sm:hidden">{pendingMembersCount}</span>
+                </button>
+              )}
+
               {/* + New Task Button in Official True Maroon */}
               <button
                 onClick={onCreateTaskClick}

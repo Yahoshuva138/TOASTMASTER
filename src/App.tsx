@@ -745,7 +745,9 @@ export default function App() {
       <Login 
         onLoginSuccess={handleLoginSuccess} 
         onRequestAccess={handleRequestAccess}
-        members={members} 
+        onApprovePendingMember={handleApprovePendingMember}
+        members={members}
+        departments={departments}
       />
     );
   }
@@ -768,6 +770,7 @@ export default function App() {
         currentPage={currentPage}
         isMobileMenuOpen={isMobileMenuOpen}
         onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
+        pendingMembersCount={pendingMembersCount}
       />
 
       {/* Main Body with Sidebar */}
@@ -793,6 +796,9 @@ export default function App() {
               currentUser={currentUser}
               activityLogs={activityLogs}
               pendingMembersCount={pendingMembersCount}
+              pendingMembers={members.filter(m => m.accessStatus === 'pending')}
+              onApprovePendingMember={handleApprovePendingMember}
+              onRejectPendingMember={handleRejectPendingMember}
               onNavigate={handleNavigate}
               onSelectTask={setSelectedTask}
               onCreateTaskClick={() => setIsCreateTaskOpen(true)}
