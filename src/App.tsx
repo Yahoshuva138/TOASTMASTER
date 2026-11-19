@@ -76,7 +76,39 @@ export default function App() {
   const [members, setMembers] = useState<Profile[]>(() => {
     const saved = localStorage.getItem('tm_hub_members');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed: Profile[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // 1. Upgrade legacy email to kesaboyinayahoshuva@gmail.com
+          const updated = parsed.map(m => {
+            if (m.id === 'user-yahoshuva' || m.email === 'yahoshuva.kesaboyina@scaler.com') {
+              return {
+                ...m,
+                email: 'kesaboyinayahoshuva@gmail.com',
+                fullName: 'TM Yahoshuva Kesaboyina',
+                systemRole: 'super_admin' as UserSystemRole,
+                clubRole: 'Super Admin / Club Secretary',
+                isActive: true,
+                accessStatus: 'approved' as const
+              };
+            }
+            return m;
+          });
+
+          // 2. Ensure Super Admin is present
+          if (!updated.some(m => m.email.toLowerCase() === 'kesaboyinayahoshuva@gmail.com')) {
+            updated.unshift(INITIAL_PROFILES[0]);
+          }
+
+          // 3. Ensure Abdul Rahman is present in roster
+          if (!updated.some(m => m.email.toLowerCase() === 'abdulrahman2425201@gmail.com')) {
+            const abdul = INITIAL_PROFILES.find(p => p.email === 'abdulrahman2425201@gmail.com');
+            if (abdul) updated.push(abdul);
+          }
+
+          return updated;
+        }
+      } catch (e) {}
     }
     return INITIAL_PROFILES;
   });
@@ -183,7 +215,12 @@ export default function App() {
   // Auth Handlers
   const handleLoginSuccess = (user: Profile) => {
     setCurrentUser(user);
-    if (!members.some(m => m.id === user.id || m.email.toLowerCase() === user.email.toLowerCase())) {
+    const existingIndex = members.findIndex(
+      m => m.id === user.id || m.email.toLowerCase() === user.email.toLowerCase()
+    );
+    if (existingIndex >= 0) {
+      setMembers(prev => prev.map((m, i) => (i === existingIndex ? { ...m, ...user } : m)));
+    } else {
       setMembers(prev => [...prev, user]);
     }
   };

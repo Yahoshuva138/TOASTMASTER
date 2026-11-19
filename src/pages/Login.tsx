@@ -12,7 +12,12 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Profile } from '../types/database.types';
-import { syncAccessRequestToCloud, checkCloudApprovalStatus } from '../lib/cloudSync';
+import { 
+  syncAccessRequestToCloud, 
+  checkCloudApprovalStatus, 
+  grantCloudMemberAccess, 
+  getSystemRoleFromTitle 
+} from '../lib/cloudSync';
 
 interface LoginProps {
   onLoginSuccess: (user: Profile) => void;
@@ -31,6 +36,11 @@ export const Login: React.FC<LoginProps> = ({
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [pendingUser, setPendingUser] = useState<Profile | null>(null);
+
+  // Quick Super Admin approval state on pending screen
+  const [instantRole, setInstantRole] = useState('Club Member');
+  const [instantPin, setInstantPin] = useState('');
+  const [instantError, setInstantError] = useState('');
 
   // Check if an email belongs to Super Admin
   const isSuperAdminEmail = (rawEmail: string) => {
@@ -145,6 +155,31 @@ export const Login: React.FC<LoginProps> = ({
     } else {
       setError('Your access request is awaiting Super Admin approval. Please contact TM Yahoshuva Kesaboyina.');
     }
+  };
+
+  // Super Admin Instant Approval directly from the pending card
+  const handleInstantApprove = async () => {
+    if (!pendingUser) return;
+    setInstantError('');
+
+    if (instantPin !== '1234' && instantPin !== 'admin') {
+      setInstantError('Invalid Super Admin PIN. Enter 1234.');
+      return;
+    }
+
+    const approvedProfile: Profile = {
+      ...pendingUser,
+      clubRole: instantRole,
+      systemRole: getSystemRoleFromTitle(instantRole),
+      isActive: true,
+      accessStatus: 'approved',
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update cloud and local state
+    grantCloudMemberAccess(pendingUser.email, instantRole, pendingUser.fullName);
+    setPendingUser(null);
+    onLoginSuccess(approvedProfile);
   };
 
   // Google Login form submit
@@ -296,6 +331,75 @@ export const Login: React.FC<LoginProps> = ({
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Check Approval Status</span>
+                </button>
+
+                {/* Instant Super Admin Unlock Tool */}
+                <div className="mt-3 pt-3 border-t border-slate-200 text-left bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                  <div className="flex items-center space-x-1.5 text-xs font-brand font-bold text-[#004165]">
+                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
+                    <span>Super Admin: Approve & Assign Role Now</span>
+                  </div>
+
+                  {instantError && (
+                    <p className="text-[11px] text-red-600 font-semibold">{instantError}</p>
+                  )}
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Select Role</label>
+                    <select
+                      value={instantRole}
+                      onChange={e => setInstantRole(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white font-medium"
+                    >
+                      <option value="Club Member">Club Member (Standard)</option>
+                      <option value="Vice President Public Relations">Vice President Public Relations (VPPR)</option>
+                      <option value="Vice President Education">Vice President Education (VPE)</option>
+                      <option value="Vice President Membership">Vice President Membership (VPM)</option>
+                      <option value="Secretary">Club Secretary</option>
+                      <option value="Treasurer">Treasurer</option>
+                      <option value="Sergeant at Arms">Sergeant at Arms (SAA)</option>
+                      <option value="Club President">Club President</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Super Admin PIN (1234)</label>
+                    <input
+                      type="password"
+                      placeholder="Enter Admin PIN 1234"
+                      value={instantPin}
+                      onChange={e => setInstantPin(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleInstantApprove}
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-brand font-bold text-xs rounded-lg transition shadow-sm flex items-center justify-center space-x-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Verify PIN & Grant Access Immediately</span>
+                  </button>
+                </div>
+
+                {/* 1-Click Switch to Super Admin */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingUser(null);
+                    setError('');
+                    authenticateEmail('kesaboyinayahoshuva@gmail.com');
+                  }}
+                  className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 text-[#772432] text-xs font-bold rounded-lg border border-amber-300 transition flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheck className="w-4 h-4 text-[#772432]" />
+                    <span>Log In as TM Yahoshuva (Super Admin)</span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-[#772432] text-[#F2DF74] px-2 py-0.5 rounded">
+                    Admin
+                  </span>
                 </button>
 
                 <button
