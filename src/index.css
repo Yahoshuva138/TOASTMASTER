@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --tm-blue: #004165;
+    --tm-maroon: #772432;
+    --tm-gray: #A9B2B1;
+    --tm-yellow: #F2DF74;
+  }
+
+  body {
+    background-color: #F8FAFC;
+    color: #1E293B;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Badge and Tag Utility Styles */
+.badge-priority-urgent {
+  @apply bg-red-100 text-red-700 border border-red-200 font-semibold;
+}
+.badge-priority-high {
+  @apply bg-amber-100 text-amber-800 border border-amber-200 font-semibold;
+}
+.badge-priority-medium {
+  @apply bg-blue-100 text-blue-700 border border-blue-200 font-semibold;
+}
+.badge-priority-low {
+  @apply bg-slate-100 text-slate-700 border border-slate-200;
+}
+
+.badge-status-approved {
+  @apply bg-emerald-100 text-emerald-800 border border-emerald-200;
+}
+.badge-status-in_progress {
+  @apply bg-sky-100 text-sky-800 border border-sky-200;
+}
+.badge-status-submitted_for_review {
+  @apply bg-purple-100 text-purple-800 border border-purple-200 animate-pulse;
+}
+.badge-status-not_started {
+  @apply bg-slate-100 text-slate-700 border border-slate-200;
+}
+.badge-status-changes_requested {
+  @apply bg-orange-100 text-orange-800 border border-orange-200;
+}
