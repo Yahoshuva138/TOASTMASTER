@@ -51,6 +51,8 @@ import { AdminSettings } from './pages/AdminSettings';
 import { UserProfile } from './pages/UserProfile';
 import { RoleResources } from './pages/RoleResources';
 import { MeetingAgendas } from './pages/MeetingAgendas';
+import { fetchCloudMembers, grantCloudMemberAccess } from './lib/cloudSync';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 
 export default function App() {
   // Session & Auth State: NO auto-login by default! Show main login page on first load
@@ -141,6 +143,43 @@ export default function App() {
     }
   }, [currentUser]);
 
+  // Realtime Supabase Cloud Synchronization for Members & Access Requests
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const syncWithCloud = async () => {
+      const cloudMembers = await fetchCloudMembers();
+      if (cloudMembers.length > 0) {
+        setMembers(prev => {
+          const merged = [...prev];
+          cloudMembers.forEach(cm => {
+            const idx = merged.findIndex(m => m.email.toLowerCase() === cm.email.toLowerCase());
+            if (idx >= 0) {
+              merged[idx] = { ...merged[idx], ...cm };
+            } else {
+              merged.unshift(cm);
+            }
+          });
+          return merged;
+        });
+      }
+    };
+
+    syncWithCloud();
+
+    // Subscribe to live postgres changes
+    const channel = supabase
+      .channel('realtime-members')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => {
+        syncWithCloud();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Auth Handlers
   const handleLoginSuccess = (user: Profile) => {
     setCurrentUser(user);
@@ -217,6 +256,9 @@ export default function App() {
       setMembers(prev => [authorizedProfile, ...prev]);
     }
 
+    // Sync approval to Cloud Supabase
+    grantCloudMemberAccess(email, clubRole, fullName);
+
     // Audit Log
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
@@ -257,6 +299,9 @@ export default function App() {
 
     // Audit Log
     const target = members.find(m => m.id === memberId);
+    if (target?.email) {
+      grantCloudMemberAccess(target.email, clubRole, target.fullName);
+    }
     const log: ActivityLogItem = {
       id: 'act-' + Date.now(),
       userName: currentUser?.fullName || 'Super Admin',

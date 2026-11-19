@@ -12,6 +12,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Profile } from '../types/database.types';
+import { syncAccessRequestToCloud, checkCloudApprovalStatus } from '../lib/cloudSync';
 
 interface LoginProps {
   onLoginSuccess: (user: Profile) => void;
@@ -100,11 +101,12 @@ export const Login: React.FC<LoginProps> = ({
 
       onRequestAccess(newPendingProfile);
       setPendingUser(newPendingProfile);
+      syncAccessRequestToCloud(newPendingProfile);
     }
   };
 
-  // Re-check pending status
-  const handleCheckStatus = () => {
+  // Re-check pending status (checks both Live Cloud Supabase and local store)
+  const handleCheckStatus = async () => {
     if (!pendingUser) return;
     const cleanEmail = pendingUser.email.toLowerCase().trim();
 
@@ -113,6 +115,28 @@ export const Login: React.FC<LoginProps> = ({
       return;
     }
 
+    // 1. Check in Cloud Supabase first!
+    const cloudCheck = await checkCloudApprovalStatus(cleanEmail);
+    if (cloudCheck.approved && cloudCheck.profile) {
+      const fullProfile: Profile = {
+        id: cloudCheck.profile.id || pendingUser.id,
+        email: cleanEmail,
+        fullName: cloudCheck.profile.fullName || pendingUser.fullName,
+        avatarUrl: pendingUser.avatarUrl,
+        clubRole: cloudCheck.role || 'Club Member',
+        systemRole: cloudCheck.profile.systemRole || 'member',
+        departmentName: 'Club Roster',
+        isActive: true,
+        accessStatus: 'approved',
+        createdAt: pendingUser.createdAt,
+        updatedAt: new Date().toISOString()
+      };
+      setPendingUser(null);
+      onLoginSuccess(fullProfile);
+      return;
+    }
+
+    // 2. Check in local members list
     const matched = members.find(m => m.email.toLowerCase() === cleanEmail);
     if (matched && (matched.accessStatus === 'approved' || matched.isActive)) {
       setPendingUser(null);
