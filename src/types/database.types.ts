@@ -25,6 +25,15 @@ export type TaskStatus =
 
 export type ReviewAction = 'approved' | 'rejected' | 'changes_requested';
 
+export interface MemberAchievement {
+  id: string;
+  title: string;
+  icon: string;
+  category: string;
+  dateEarned: string;
+  description: string;
+}
+
 export interface Profile {
   id: string;
   email: string;
@@ -41,6 +50,11 @@ export interface Profile {
   linkedinUrl?: string;
   portfolioUrl?: string;
   bio?: string;
+  statusMessage?: string; // Live personal status e.g. "🟢 Available for Next Meeting Role"
+  attendanceStreak?: number; // e.g. 8 meetings
+  speechStreak?: number; // e.g. 4 speeches
+  rolesStreak?: number; // e.g. 6 roles
+  achievements?: MemberAchievement[];
   createdAt: string;
   updatedAt: string;
 }

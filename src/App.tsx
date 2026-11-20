@@ -238,6 +238,18 @@ export default function App() {
     };
   }, []);
 
+  // Direct Showcase Link Handler (e.g. ?member=user-yahoshuva)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('member')) {
+        setCurrentPage('user-profile');
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   // Google OAuth Listener (Detects Google Sign-In redirect from Supabase)
   useEffect(() => {
     if (!isSupabaseConfigured()) return;

@@ -33,7 +33,11 @@ import {
   Linkedin,
   Phone,
   X,
-  Save
+  Save,
+  Flame,
+  Trophy,
+  Star,
+  Zap
 } from 'lucide-react';
 import { 
   Profile, 
@@ -67,11 +71,21 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   onUpdateProfile
 }) => {
   // Allow viewing personal profile or switching to inspect another member's story (e.g. for PR or Admin)
-  const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
-  const [activeTab, setActiveTab] = useState<'evidence' | 'evaluations' | 'timeline' | 'pr-story' | 'todos'>('evidence');
+  const [selectedMemberId, setSelectedMemberId] = useState<string>(() => {
+    try {
+      const urlMember = new URLSearchParams(window.location.search).get('member');
+      if (urlMember) {
+        const found = members.find(m => m.id === urlMember || m.email.toLowerCase() === urlMember.toLowerCase());
+        if (found) return found.id;
+      }
+    } catch {}
+    return currentUser.id;
+  });
+  const [activeTab, setActiveTab] = useState<'evidence' | 'evaluations' | 'timeline' | 'achievements-roles' | 'pr-story' | 'todos'>('evidence');
   const [evalTypeFilter, setEvalTypeFilter] = useState<'all' | 'evaluated' | 'evaluating'>('all');
   const [evidenceFilter, setEvidenceFilter] = useState<'all' | 'photos' | 'videos' | 'docs'>('all');
   const [copiedCaption, setCopiedCaption] = useState<'insta' | 'linkedin' | null>(null);
+  const [copiedShowcaseLink, setCopiedShowcaseLink] = useState<boolean>(false);
 
   // Profile Customization Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
@@ -82,6 +96,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const [editLinkedinUrl, setEditLinkedinUrl] = useState<string>('');
   const [editPortfolioUrl, setEditPortfolioUrl] = useState<string>('');
   const [editBio, setEditBio] = useState<string>('');
+  const [editStatusMessage, setEditStatusMessage] = useState<string>('');
+  const [editAttendanceStreak, setEditAttendanceStreak] = useState<number>(8);
+  const [editSpeechStreak, setEditSpeechStreak] = useState<number>(4);
+  const [editRolesStreak, setEditRolesStreak] = useState<number>(6);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,6 +245,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     setTimeout(() => setCopiedCaption(null), 2500);
   };
 
+  // Copy Showcase link helper
+  const handleCopyShowcaseLink = () => {
+    const showcaseUrl = `${window.location.origin}?member=${activeMember.id}`;
+    navigator.clipboard.writeText(showcaseUrl);
+    setCopiedShowcaseLink(true);
+    setTimeout(() => setCopiedShowcaseLink(false), 2500);
+  };
+
   // Open Edit Profile Modal
   const handleOpenEditModal = () => {
     setEditName(activeMember.fullName || '');
@@ -236,6 +262,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     setEditLinkedinUrl(activeMember.linkedinUrl || '');
     setEditPortfolioUrl(activeMember.portfolioUrl || '');
     setEditBio(activeMember.bio || '');
+    setEditStatusMessage(activeMember.statusMessage || '');
+    setEditAttendanceStreak(activeMember.attendanceStreak || 8);
+    setEditSpeechStreak(activeMember.speechStreak || 4);
+    setEditRolesStreak(activeMember.rolesStreak || 6);
     setSaveSuccessMsg('');
     setIsEditModalOpen(true);
   };
@@ -270,7 +300,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       githubUrl: editGithubUrl.trim(),
       linkedinUrl: editLinkedinUrl.trim(),
       portfolioUrl: editPortfolioUrl.trim(),
-      bio: editBio.trim()
+      bio: editBio.trim(),
+      statusMessage: editStatusMessage.trim(),
+      attendanceStreak: Number(editAttendanceStreak) || 1,
+      speechStreak: Number(editSpeechStreak) || 0,
+      rolesStreak: Number(editRolesStreak) || 0
     };
 
     if (onUpdateProfile) {
@@ -315,6 +349,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Active Roster</span>
+              </span>
+            </div>
+
+            {/* Live Personal Status Badge */}
+            <div className="flex items-center space-x-2 pt-0.5">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded-full shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>{activeMember.statusMessage || '🟢 Active Club Member • Ready for Meeting Roles'}</span>
               </span>
             </div>
 
@@ -384,9 +426,28 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               )}
             </div>
 
-            {/* Customize Profile Button */}
-            {(currentUser.id === activeMember.id || currentUser.systemRole === 'super_admin') && (
-              <div className="pt-2">
+            {/* Action Buttons: Edit Profile & Share Personal Showcase Link */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={handleCopyShowcaseLink}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#F2DF74] hover:bg-[#ebd559] text-[#004165] text-xs font-brand font-black rounded-xl shadow-sm transition border border-amber-300"
+                title="Copy public link to this member's live status & achievements"
+              >
+                {copiedShowcaseLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-700" />
+                    <span className="text-emerald-800 font-bold">Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5 text-[#004165]" />
+                    <span>Copy Showcase Link</span>
+                  </>
+                )}
+              </button>
+
+              {(currentUser.id === activeMember.id || currentUser.systemRole === 'super_admin') && (
                 <button
                   type="button"
                   onClick={handleOpenEditModal}
@@ -395,8 +456,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                   <Edit3 className="w-3.5 h-3.5 text-[#F2DF74]" />
                   <span>Edit Profile, Photo & Social Links</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -431,6 +492,58 @@ export const UserProfile: React.FC<UserProfileProps> = ({
           )}
         </div>
 
+      </div>
+
+      {/* Live Member Activity & Streaks Showcase Bar */}
+      <div className="bg-gradient-to-r from-[#004165] via-[#002B44] to-[#772432] p-5 sm:p-6 rounded-3xl text-white shadow-lg border-2 border-[#F2DF74]/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#F2DF74]/20 border border-[#F2DF74]/40 flex items-center justify-center text-2xl shadow-inner flex-shrink-0">
+            🔥
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-brand font-bold text-[#F2DF74] tracking-wider block">
+              Active Member Engagement Streaks
+            </span>
+            <h3 className="font-brand font-black text-base sm:text-lg text-white">
+              {activeMember.fullName}'s Club Streak Matrix
+            </h3>
+            <p className="text-xs text-slate-300">
+              Unbroken meeting attendance, speech milestones, and meeting role performance
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Attendance Streak */}
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center flex-1 sm:flex-none">
+            <span className="text-[10px] text-slate-300 font-semibold uppercase block">Attendance Streak</span>
+            <div className="text-xl font-black text-[#F2DF74] flex items-center justify-center space-x-1">
+              <span>🔥</span>
+              <span>{activeMember.attendanceStreak || 8}</span>
+            </div>
+            <span className="text-[10px] text-emerald-300 font-medium">consecutive meetings</span>
+          </div>
+
+          {/* Speech Streak */}
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center flex-1 sm:flex-none">
+            <span className="text-[10px] text-slate-300 font-semibold uppercase block">Speeches Delivered</span>
+            <div className="text-xl font-black text-white flex items-center justify-center space-x-1">
+              <span>🎙️</span>
+              <span>{activeMember.speechStreak || 4}</span>
+            </div>
+            <span className="text-[10px] text-slate-300 font-medium">evaluated speeches</span>
+          </div>
+
+          {/* Roles Streak */}
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center flex-1 sm:flex-none">
+            <span className="text-[10px] text-slate-300 font-semibold uppercase block">Meeting Roles</span>
+            <div className="text-xl font-black text-amber-300 flex items-center justify-center space-x-1">
+              <span>⚡</span>
+              <span>{activeMember.rolesStreak || 6}</span>
+            </div>
+            <span className="text-[10px] text-amber-200 font-medium">roles fulfilled</span>
+          </div>
+        </div>
       </div>
 
       {/* 5 Real-Time Personal Metric Cards */}
@@ -511,6 +624,18 @@ export const UserProfile: React.FC<UserProfileProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('achievements-roles')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 flex-shrink-0 ${
+              activeTab === 'achievements-roles'
+                ? 'bg-[#004165] text-[#F2DF74] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 text-[#F2DF74]" />
+            <span>4. Achievements, Streaks & Roles</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('pr-story')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 flex-shrink-0 ${
               activeTab === 'pr-story'
@@ -519,7 +644,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>4. PR Member Story Spotlight</span>
+            <span>5. PR Member Story Spotlight</span>
           </button>
 
           <button
@@ -531,7 +656,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>5. Live To-Do List ({memberTasks.length})</span>
+            <span>6. Live To-Do List ({memberTasks.length})</span>
           </button>
 
         </div>
@@ -889,7 +1014,248 @@ export const UserProfile: React.FC<UserProfileProps> = ({
           </div>
         )}
 
-        {/* TAB 4: PR MEMBER STORY SPOTLIGHT & SOCIAL MEDIA GENERATOR */}
+        {/* TAB 4: ACHIEVEMENTS, STREAKS & CLUB ROLES MATRIX */}
+        {activeTab === 'achievements-roles' && (
+          <div className="p-6 space-y-7">
+            
+            {/* Top Shareable Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold uppercase text-[#004165] tracking-wider">
+                    Member Honors & Roles
+                  </span>
+                  <span className="text-[10px] bg-[#F2DF74] text-[#004165] font-black px-2 py-0.5 rounded-full">
+                    Official Recognition
+                  </span>
+                </div>
+                <h3 className="font-brand font-bold text-lg text-slate-900 mt-0.5">
+                  Achievements, Engagement Streaks & Club Roles
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Verified awards, speech accomplishments, and full meeting leadership roles portfolio
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyShowcaseLink}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#004165] hover:bg-[#00314d] text-white text-xs font-brand font-bold rounded-xl shadow-sm transition"
+              >
+                {copiedShowcaseLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Showcase Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5 text-[#F2DF74]" />
+                    <span>Copy Shareable Link</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* SECTION 1: OFFICIAL CLUB ACHIEVEMENTS */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-brand font-bold text-sm text-slate-900 flex items-center space-x-2">
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                  <span>Earned Accolades & Distinctions ({activeMember.achievements?.length || 5})</span>
+                </h4>
+                <span className="text-xs text-slate-400">Awarded at SpeakUp Scaler Club</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {(activeMember.achievements || [
+                  {
+                    id: 'ach-1',
+                    title: 'Icebreaker Champion',
+                    icon: '🏆',
+                    category: 'Pathways Milestone',
+                    dateEarned: '2026-10-14',
+                    description: 'Delivered debut Icebreaker speech at SpeakUp Scaler Toastmasters Club.'
+                  },
+                  {
+                    id: 'ach-2',
+                    title: 'Best Speaker Distinction',
+                    icon: '⭐',
+                    category: 'Meeting Accolade',
+                    dateEarned: '2026-11-04',
+                    description: 'Awarded Best Speaker by club vote for compelling presentation on leadership.'
+                  },
+                  {
+                    id: 'ach-3',
+                    title: 'Executive Leadership Pillar',
+                    icon: '🛡️',
+                    category: 'Club Governance',
+                    dateEarned: '2026-10-01',
+                    description: 'Active officer driving task tracking and digital member engagement.'
+                  },
+                  {
+                    id: 'ach-4',
+                    title: 'Punctual Table Topics Titan',
+                    icon: '⚡',
+                    category: 'Impromptu Speaking',
+                    dateEarned: '2026-10-28',
+                    description: 'Concluded impromptu Table Topic right within green-amber time window.'
+                  },
+                  {
+                    id: 'ach-5',
+                    title: 'Constructive Evaluator',
+                    icon: '🏅',
+                    category: 'Speech Evaluation',
+                    dateEarned: '2026-11-11',
+                    description: 'Delivered constructive feedback using the commend-recommend-commend method.'
+                  }
+                ]).map((ach) => (
+                  <div 
+                    key={ach.id} 
+                    className="p-4 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-amber-300 hover:shadow-md transition space-y-2 flex flex-col justify-between"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl p-1 bg-amber-100/60 rounded-xl border border-amber-200/80">{ach.icon}</span>
+                        <span className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
+                          {ach.category}
+                        </span>
+                      </div>
+                      <h5 className="font-brand font-bold text-sm text-slate-900 pt-1">{ach.title}</h5>
+                      <p className="text-xs text-slate-600 leading-relaxed">{ach.description}</p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                      <span>Awarded</span>
+                      <span className="font-semibold text-slate-600">{ach.dateEarned}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION 2: CLUB ROLES FULFILLED MATRIX */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-brand font-bold text-sm text-slate-900 flex items-center space-x-2">
+                  <Award className="w-4 h-4 text-[#004165]" />
+                  <span>Meeting Roles Fulfilled History</span>
+                </h4>
+                <span className="text-xs text-slate-500 font-semibold">Total Roles: {(activeMember.rolesStreak || 6) + 12}</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { role: 'Prepared Speaker', count: activeMember.speechStreak || 4, icon: '🎙️', tag: 'Speeches', lastDate: 'Nov 11, 2026' },
+                  { role: 'Speech Evaluator', count: 5, icon: '🔍', tag: 'Evaluations', lastDate: 'Nov 04, 2026' },
+                  { role: 'Toastmaster of the Day', count: 2, icon: '👑', tag: 'Leadership', lastDate: 'Oct 28, 2026' },
+                  { role: 'Table Topics Speaker', count: 6, icon: '⚡', tag: 'Impromptu', lastDate: 'Nov 11, 2026' },
+                  { role: 'General Evaluator', count: 3, icon: '⚖️', tag: 'Evaluation', lastDate: 'Oct 21, 2026' },
+                  { role: 'Timer & Pace Official', count: 4, icon: '⏱️', tag: 'Meeting Role', lastDate: 'Oct 14, 2026' },
+                  { role: 'Grammarian & Ah-Counter', count: 3, icon: '📝', tag: 'Meeting Role', lastDate: 'Oct 07, 2026' },
+                  { role: 'Zoom & Hybrid Director', count: activeMember.attendanceStreak || 8, icon: '💻', tag: 'Tech Official', lastDate: 'Nov 18, 2026' },
+                ].map((r, i) => (
+                  <div key={i} className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl">{r.icon}</span>
+                      <span className="text-base font-black text-[#004165] bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
+                        {r.count}x
+                      </span>
+                    </div>
+                    <span className="text-xs font-brand font-bold text-slate-900 block leading-tight">{r.role}</span>
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                      <span>{r.tag}</span>
+                      <span className="text-slate-600 font-mono font-medium">{r.lastDate}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION 3: SHAREABLE DIGITAL SHOWCASE BADGE */}
+            <div className="bg-gradient-to-br from-slate-900 via-[#002B44] to-[#001D2E] text-white p-6 sm:p-7 rounded-3xl shadow-xl border-2 border-[#F2DF74] space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={activeMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'}
+                    alt={activeMember.fullName}
+                    className="w-14 h-14 rounded-2xl object-cover border-2 border-[#F2DF74] shadow-md"
+                  />
+                  <div>
+                    <h5 className="font-brand font-black text-lg text-white">{activeMember.fullName}</h5>
+                    <p className="text-xs text-amber-300 font-semibold">{activeMember.clubRole} • SpeakUp Scaler Club #28681022</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {activeMember.githubUrl && (
+                    <a
+                      href={activeMember.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-xs font-bold text-white rounded-lg border border-white/20 flex items-center space-x-1.5 transition"
+                    >
+                      <Github className="w-3.5 h-3.5" />
+                      <span>GitHub</span>
+                    </a>
+                  )}
+                  {activeMember.portfolioUrl && (
+                    <a
+                      href={activeMember.portfolioUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 bg-emerald-600/80 hover:bg-emerald-600 text-xs font-bold text-white rounded-lg border border-emerald-400 flex items-center space-x-1.5 transition"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>Website</span>
+                    </a>
+                  )}
+                  {activeMember.linkedinUrl && (
+                    <a
+                      href={activeMember.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 bg-[#0A66C2]/80 hover:bg-[#0A66C2] text-xs font-bold text-white rounded-lg border border-blue-400 flex items-center space-x-1.5 transition"
+                    >
+                      <Linkedin className="w-3.5 h-3.5" />
+                      <span>LinkedIn</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Attendance Streak</span>
+                  <span className="text-lg font-black text-[#F2DF74]">🔥 {activeMember.attendanceStreak || 8} Meetings</span>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Speeches Delivered</span>
+                  <span className="text-lg font-black text-white">🎙️ {activeMember.speechStreak || 4} Speeches</span>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Live Status</span>
+                  <span className="text-xs font-bold text-emerald-300 block mt-1 line-clamp-1">{activeMember.statusMessage || '🟢 Ready for Next Meeting'}</span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-slate-300 gap-2 border-t border-white/10">
+                <span className="font-mono text-[11px] text-slate-400">
+                  Direct Profile URL: {window.location.origin}?member={activeMember.id}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyShowcaseLink}
+                  className="px-3 py-1 bg-[#F2DF74] text-[#004165] font-black text-xs rounded-lg hover:bg-amber-300 transition"
+                >
+                  {copiedShowcaseLink ? 'Copied URL!' : 'Copy Direct Link'}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 5: PR MEMBER STORY SPOTLIGHT & SOCIAL MEDIA GENERATOR */}
         {activeTab === 'pr-story' && (
           <div className="p-6 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
@@ -1270,6 +1636,61 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                   placeholder="https://myportfolio.com"
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none font-mono text-slate-700"
                 />
+              </div>
+
+              {/* Status Message */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">Personal Club Status</label>
+                <input
+                  type="text"
+                  value={editStatusMessage}
+                  onChange={(e) => setEditStatusMessage(e.target.value)}
+                  placeholder="e.g. 🟢 Available for Table Topics & General Evaluator"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none text-slate-800"
+                />
+              </div>
+
+              {/* Engagement Streaks (Editable for Member / Admin) */}
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
+                    <span>🔥</span>
+                    <span>Attendance</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editAttendanceStreak}
+                    onChange={(e) => setEditAttendanceStreak(parseInt(e.target.value) || 0)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] font-bold text-[#004165]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
+                    <span>🎙️</span>
+                    <span>Speeches</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editSpeechStreak}
+                    onChange={(e) => setEditSpeechStreak(parseInt(e.target.value) || 0)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] font-bold text-[#004165]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
+                    <span>⚡</span>
+                    <span>Roles</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editRolesStreak}
+                    onChange={(e) => setEditRolesStreak(parseInt(e.target.value) || 0)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] font-bold text-[#004165]"
+                  />
+                </div>
               </div>
 
               {/* Bio / Quote */}

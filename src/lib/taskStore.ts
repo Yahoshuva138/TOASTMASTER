@@ -88,7 +88,54 @@ export const INITIAL_PROFILES: Profile[] = [
     phone: '+91 98765 43210',
     githubUrl: 'https://github.com/Yahoshuva138',
     linkedinUrl: 'https://linkedin.com/in/yahoshuva',
+    portfolioUrl: 'https://yahoshuva.dev',
     bio: 'Toastmasters Club Secretary, Lead Developer of Task Hub, and Level 1 Best Speaker Winner at Scaler School of Technology.',
+    statusMessage: '🟢 Available for Table Topics & General Evaluator',
+    attendanceStreak: 8,
+    speechStreak: 4,
+    rolesStreak: 6,
+    achievements: [
+      {
+        id: 'ach-1',
+        title: 'Icebreaker Champion',
+        icon: '🏆',
+        category: 'Pathways Speech',
+        dateEarned: '2026-10-14',
+        description: 'Delivered flawless Icebreaker speech at SpeakUp Scaler Innovation Hall.'
+      },
+      {
+        id: 'ach-2',
+        title: 'Best Speaker Distinction',
+        icon: '⭐',
+        category: 'Club Meeting Awards',
+        dateEarned: '2026-11-04',
+        description: 'Voted Best Speaker by club peers for Level 1 Project 2 speech on leadership.'
+      },
+      {
+        id: 'ach-3',
+        title: 'Executive Leadership Pillar',
+        icon: '🛡️',
+        category: 'Club Governance',
+        dateEarned: '2026-10-01',
+        description: 'Leading digital transformation and task governance as Super Admin & Secretary.'
+      },
+      {
+        id: 'ach-4',
+        title: 'Punctual Table Topics Titan',
+        icon: '⚡',
+        category: 'Impromptu Speaking',
+        dateEarned: '2026-10-28',
+        description: 'Spoke with poise and concluded on the green card at 1m 55s.'
+      },
+      {
+        id: 'ach-5',
+        title: 'Constructive Evaluator',
+        icon: '🏅',
+        category: 'Speech Evaluation',
+        dateEarned: '2026-11-11',
+        description: 'Delivered 5+ structured MoM evaluations using the commend-recommend-commend method.'
+      }
+    ],
     createdAt: '2026-10-01T10:00:00Z',
     updatedAt: '2026-11-18T10:00:00Z'
   },
