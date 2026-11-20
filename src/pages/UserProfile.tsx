@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   User, 
   Mail, 
@@ -24,7 +24,16 @@ import {
   Video, 
   Image as ImageIcon,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  Edit3,
+  Camera,
+  Upload,
+  Globe,
+  Github,
+  Linkedin,
+  Phone,
+  X,
+  Save
 } from 'lucide-react';
 import { 
   Profile, 
@@ -46,6 +55,7 @@ interface UserProfileProps {
   members?: Profile[];
   onSelectTask?: (task: Task) => void;
   onNavigate?: (page: string) => void;
+  onUpdateProfile?: (updatedProfile: Profile) => void;
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({
@@ -53,7 +63,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   tasks,
   members = [],
   onSelectTask,
-  onNavigate
+  onNavigate,
+  onUpdateProfile
 }) => {
   // Allow viewing personal profile or switching to inspect another member's story (e.g. for PR or Admin)
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
@@ -61,6 +72,18 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const [evalTypeFilter, setEvalTypeFilter] = useState<'all' | 'evaluated' | 'evaluating'>('all');
   const [evidenceFilter, setEvidenceFilter] = useState<'all' | 'photos' | 'videos' | 'docs'>('all');
   const [copiedCaption, setCopiedCaption] = useState<'insta' | 'linkedin' | null>(null);
+
+  // Profile Customization Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [editName, setEditName] = useState<string>('');
+  const [editPhone, setEditPhone] = useState<string>('');
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string>('');
+  const [editGithubUrl, setEditGithubUrl] = useState<string>('');
+  const [editLinkedinUrl, setEditLinkedinUrl] = useState<string>('');
+  const [editPortfolioUrl, setEditPortfolioUrl] = useState<string>('');
+  const [editBio, setEditBio] = useState<string>('');
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Active member profile
   const activeMember = members.find(m => m.id === selectedMemberId) || currentUser;
@@ -204,6 +227,63 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     setTimeout(() => setCopiedCaption(null), 2500);
   };
 
+  // Open Edit Profile Modal
+  const handleOpenEditModal = () => {
+    setEditName(activeMember.fullName || '');
+    setEditPhone(activeMember.phone || '');
+    setEditAvatarUrl(activeMember.avatarUrl || '');
+    setEditGithubUrl(activeMember.githubUrl || '');
+    setEditLinkedinUrl(activeMember.linkedinUrl || '');
+    setEditPortfolioUrl(activeMember.portfolioUrl || '');
+    setEditBio(activeMember.bio || '');
+    setSaveSuccessMsg('');
+    setIsEditModalOpen(true);
+  };
+
+  // Upload Avatar File
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Avatar file size must be less than 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setEditAvatarUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Save Profile Changes
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated: Profile = {
+      ...activeMember,
+      fullName: editName.trim() || activeMember.fullName,
+      phone: editPhone.trim(),
+      avatarUrl: editAvatarUrl.trim(),
+      githubUrl: editGithubUrl.trim(),
+      linkedinUrl: editLinkedinUrl.trim(),
+      portfolioUrl: editPortfolioUrl.trim(),
+      bio: editBio.trim()
+    };
+
+    if (onUpdateProfile) {
+      onUpdateProfile(updated);
+    }
+
+    setSaveSuccessMsg('Profile updated successfully!');
+    setTimeout(() => {
+      setSaveSuccessMsg('');
+      setIsEditModalOpen(false);
+    }, 1000);
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       
@@ -226,7 +306,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <h1 className="text-2xl font-brand font-black text-slate-900">{activeMember.fullName}</h1>
               <span className="px-3 py-0.5 rounded-full text-xs font-brand font-bold bg-[#772432] text-[#F2DF74] border border-[#932C3E]">
@@ -246,6 +326,77 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             <p className="text-xs text-slate-600">
               SpeakUp Scaler Toastmasters Club #28681022 • {activeMember.departmentName || 'General Membership'}
             </p>
+
+            {/* Member Bio / Motto */}
+            {activeMember.bio && (
+              <p className="text-xs italic text-slate-700 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl max-w-lg flex items-start space-x-1.5">
+                <Quote className="w-3.5 h-3.5 text-[#004165] flex-shrink-0 mt-0.5" />
+                <span>"{activeMember.bio}"</span>
+              </p>
+            )}
+
+            {/* Public Links & Social Accounts */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+              {activeMember.githubUrl && (
+                <a
+                  href={activeMember.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold px-2.5 py-1 bg-slate-900 hover:bg-black text-white rounded-lg transition shadow-sm"
+                  title="View GitHub Profile"
+                >
+                  <Github className="w-3.5 h-3.5 text-slate-200" />
+                  <span>GitHub</span>
+                  <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+                </a>
+              )}
+              {activeMember.linkedinUrl && (
+                <a
+                  href={activeMember.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold px-2.5 py-1 bg-[#0A66C2] hover:bg-[#084e96] text-white rounded-lg transition shadow-sm"
+                  title="View LinkedIn Profile"
+                >
+                  <Linkedin className="w-3.5 h-3.5 text-blue-100" />
+                  <span>LinkedIn</span>
+                  <ExternalLink className="w-2.5 h-2.5 text-blue-200" />
+                </a>
+              )}
+              {activeMember.portfolioUrl && (
+                <a
+                  href={activeMember.portfolioUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg transition shadow-sm"
+                  title="View Portfolio"
+                >
+                  <Globe className="w-3.5 h-3.5 text-emerald-100" />
+                  <span>Portfolio</span>
+                  <ExternalLink className="w-2.5 h-2.5 text-emerald-200" />
+                </a>
+              )}
+              {activeMember.phone && (
+                <span className="inline-flex items-center space-x-1 text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  <Phone className="w-3 h-3 text-slate-400" />
+                  <span>{activeMember.phone}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Customize Profile Button */}
+            {(currentUser.id === activeMember.id || currentUser.systemRole === 'super_admin') && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleOpenEditModal}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#004165] hover:bg-[#00314d] text-white text-xs font-brand font-bold rounded-xl shadow-sm transition"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-[#F2DF74]" />
+                  <span>Edit Profile, Photo & Social Links</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -974,6 +1125,185 @@ export const UserProfile: React.FC<UserProfileProps> = ({
         )}
 
       </div>
+
+      {/* Edit Profile & Social Links Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-[#004165]/10 flex items-center justify-center text-[#004165]">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-brand font-black text-lg text-slate-900">Customize Member Profile</h3>
+                  <p className="text-xs text-slate-500">Update photo, public links (GitHub, LinkedIn) & personal bio</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {saveSuccessMsg && (
+              <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-2xl flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>{saveSuccessMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveProfile} className="mt-5 space-y-4">
+              {/* Profile Photo Section */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 block">Profile Picture</label>
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <img
+                      src={editAvatarUrl || activeMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'}
+                      alt="Avatar Preview"
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-[#004165] shadow"
+                    />
+                  </div>
+                  <div className="space-y-1.5 flex-1">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleAvatarFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-300"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-[#004165]" />
+                      <span>Upload from Device</span>
+                    </button>
+                    <p className="text-[11px] text-slate-400">PNG, JPG, or WebP up to 5MB</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500 block mb-1">Or direct Image URL:</label>
+                  <input
+                    type="url"
+                    value={editAvatarUrl}
+                    onChange={(e) => setEditAvatarUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Full Name */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="TM Firstname Lastname"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none font-semibold text-slate-800"
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">Phone / WhatsApp</label>
+                <div className="relative">
+                  <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* GitHub Link */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                  <Github className="w-3.5 h-3.5 text-slate-800" />
+                  <span>GitHub Profile URL</span>
+                </label>
+                <input
+                  type="url"
+                  value={editGithubUrl}
+                  onChange={(e) => setEditGithubUrl(e.target.value)}
+                  placeholder="https://github.com/Yahoshuva138"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none font-mono text-slate-700"
+                />
+              </div>
+
+              {/* LinkedIn Link */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                  <Linkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+                  <span>LinkedIn Profile URL</span>
+                </label>
+                <input
+                  type="url"
+                  value={editLinkedinUrl}
+                  onChange={(e) => setEditLinkedinUrl(e.target.value)}
+                  placeholder="https://linkedin.com/in/username"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none font-mono text-slate-700"
+                />
+              </div>
+
+              {/* Portfolio Link */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Personal Website / Portfolio URL</span>
+                </label>
+                <input
+                  type="url"
+                  value={editPortfolioUrl}
+                  onChange={(e) => setEditPortfolioUrl(e.target.value)}
+                  placeholder="https://myportfolio.com"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none font-mono text-slate-700"
+                />
+              </div>
+
+              {/* Bio / Quote */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">Personal Motto / Bio</label>
+                <textarea
+                  rows={2}
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  placeholder="Share your speaking philosophy or leadership vision..."
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#004165] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center space-x-1.5 px-5 py-2 bg-[#004165] hover:bg-[#002f4a] text-white text-xs font-brand font-bold rounded-xl transition shadow"
+                >
+                  <Save className="w-3.5 h-3.5 text-[#F2DF74]" />
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

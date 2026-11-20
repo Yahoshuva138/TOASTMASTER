@@ -11,7 +11,8 @@ import {
   AlertTriangle, 
   Check, 
   X, 
-  UserCheck 
+  UserCheck,
+  Trash2 
 } from 'lucide-react';
 import { Profile, UserSystemRole, Department, Task } from '../types/database.types';
 
@@ -26,6 +27,7 @@ interface MembersManagementProps {
   onAuthorizeNewEmail: (email: string, fullName: string, role: UserSystemRole, clubRole: string, departmentId: string) => void;
   onApprovePendingMember: (memberId: string, role: UserSystemRole, clubRole: string, departmentId: string) => void;
   onRejectPendingMember: (memberId: string) => void;
+  onDeleteMember?: (memberId: string) => void;
 }
 
 export const MembersManagement: React.FC<MembersManagementProps> = ({
@@ -38,10 +40,12 @@ export const MembersManagement: React.FC<MembersManagementProps> = ({
   onToggleMemberActive,
   onAuthorizeNewEmail,
   onApprovePendingMember,
-  onRejectPendingMember
+  onRejectPendingMember,
+  onDeleteMember
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Profile | null>(null);
   
   // New Member Form State
   const [newEmail, setNewEmail] = useState('');
@@ -370,16 +374,28 @@ export const MembersManagement: React.FC<MembersManagementProps> = ({
                     {isSuperAdmin && (
                       <td className="px-4 py-3 text-right">
                         {m.id !== currentUser.id && (
-                          <button
-                            onClick={() => onToggleMemberActive(m.id)}
-                            className={`px-2.5 py-1 rounded text-[11px] font-semibold transition ${
-                              m.isActive 
-                                ? 'bg-red-50 text-red-700 hover:bg-red-100' 
-                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                            }`}
-                          >
-                            {m.isActive ? 'Revoke Access' : 'Grant Access'}
-                          </button>
+                          <div className="flex items-center justify-end space-x-1.5">
+                            <button
+                              onClick={() => onToggleMemberActive(m.id)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition border ${
+                                m.isActive 
+                                  ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200' 
+                                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200'
+                              }`}
+                              title={m.isActive ? 'Revoke login access' : 'Grant login access'}
+                            >
+                              {m.isActive ? 'Revoke Access' : 'Grant Access'}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setMemberToDelete(m)}
+                              className="p-1 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+                              title={`Permanently delete ${m.fullName} from club roster`}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </button>
+                          </div>
                         )}
                       </td>
                     )}
@@ -495,6 +511,49 @@ export const MembersManagement: React.FC<MembersManagementProps> = ({
               </div>
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION MODAL: PERMANENTLY DELETE MEMBER */}
+      {memberToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 animate-in zoom-in-95 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-brand font-bold text-slate-900 text-base">Permanently Delete Member?</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Are you sure you want to remove <strong className="text-slate-900">{memberToDelete.fullName}</strong> (<span className="font-mono text-slate-700">{memberToDelete.email}</span>) from SpeakUp Scaler Club?
+              </p>
+              <p className="text-[11px] text-red-600 font-semibold pt-1">
+                This will delete their account, role assignment, and club records.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setMemberToDelete(null)}
+                className="flex-1 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteMember) {
+                    onDeleteMember(memberToDelete.id);
+                  }
+                  setMemberToDelete(null);
+                }}
+                className="flex-1 py-2 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow transition"
+              >
+                Delete Member
+              </button>
+            </div>
           </div>
         </div>
       )}

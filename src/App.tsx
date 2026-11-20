@@ -51,7 +51,7 @@ import { AdminSettings } from './pages/AdminSettings';
 import { UserProfile } from './pages/UserProfile';
 import { RoleResources } from './pages/RoleResources';
 import { MeetingAgendas } from './pages/MeetingAgendas';
-import { fetchCloudMembers, grantCloudMemberAccess } from './lib/cloudSync';
+import { fetchCloudMembers, grantCloudMemberAccess, deleteCloudMember } from './lib/cloudSync';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 
 export default function App() {
@@ -446,6 +446,51 @@ export default function App() {
   // Reject pending access request
   const handleRejectPendingMember = (memberId: string) => {
     setMembers(prev => prev.filter(m => m.id !== memberId));
+  };
+
+  // Permanently delete member from club roster & cloud
+  const handleDeleteMember = async (memberId: string) => {
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+
+    if (
+      member.id === 'user-yahoshuva' ||
+      member.email.toLowerCase() === 'kesaboyinayahoshuva@gmail.com'
+    ) {
+      alert('Super Admin cannot be deleted.');
+      return;
+    }
+
+    setMembers(prev => prev.filter(m => m.id !== memberId));
+    deleteCloudMember(member.email);
+
+    // Audit Log
+    const log: ActivityLogItem = {
+      id: 'act-' + Date.now(),
+      userName: currentUser?.fullName || 'Super Admin',
+      userRole: 'Super Admin',
+      action: 'MEMBER_DELETED',
+      entityType: 'member',
+      entityId: memberId,
+      details: { email: member.email, fullName: member.fullName },
+      createdAt: new Date().toISOString()
+    };
+    setActivityLogs(prev => [log, ...prev]);
+  };
+
+  // Update member profile & public social links
+  const handleUpdateProfile = (updatedProfile: Profile) => {
+    if (
+      currentUser?.id === updatedProfile.id || 
+      currentUser?.email.toLowerCase() === updatedProfile.email.toLowerCase()
+    ) {
+      setCurrentUser(updatedProfile);
+    }
+    setMembers(prev => prev.map(m => (
+      m.id === updatedProfile.id || m.email.toLowerCase() === updatedProfile.email.toLowerCase()
+        ? { ...m, ...updatedProfile }
+        : m
+    )));
   };
 
   // Task Mutations
@@ -974,6 +1019,7 @@ export default function App() {
               onAuthorizeNewEmail={handleAuthorizeNewEmail}
               onApprovePendingMember={handleApprovePendingMember}
               onRejectPendingMember={handleRejectPendingMember}
+              onDeleteMember={handleDeleteMember}
             />
           )}
 
@@ -1022,6 +1068,7 @@ export default function App() {
               members={members}
               onSelectTask={setSelectedTask}
               onNavigate={handleNavigate}
+              onUpdateProfile={handleUpdateProfile}
             />
           )}
         </main>

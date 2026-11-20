@@ -222,3 +222,20 @@ export const checkCloudApprovalStatus = async (email: string): Promise<{ approve
     return { approved: false };
   }
 };
+
+/**
+ * 5. Delete a Member completely from Cloud Supabase
+ */
+export const deleteCloudMember = async (email: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) return false;
+
+  try {
+    const cleanEmail = email.toLowerCase().trim();
+    await supabase.from('members').delete().eq('email', cleanEmail);
+    await supabase.from('profiles').delete().eq('email', cleanEmail);
+    return true;
+  } catch (err) {
+    console.warn('Failed to delete cloud member:', err);
+    return false;
+  }
+};

@@ -86,6 +86,9 @@ export const INITIAL_PROFILES: Profile[] = [
     departmentName: 'Finance & Records',
     isActive: true,
     phone: '+91 98765 43210',
+    githubUrl: 'https://github.com/Yahoshuva138',
+    linkedinUrl: 'https://linkedin.com/in/yahoshuva',
+    bio: 'Toastmasters Club Secretary, Lead Developer of Task Hub, and Level 1 Best Speaker Winner at Scaler School of Technology.',
     createdAt: '2026-10-01T10:00:00Z',
     updatedAt: '2026-11-18T10:00:00Z'
   },
@@ -100,6 +103,9 @@ export const INITIAL_PROFILES: Profile[] = [
     departmentName: 'Public Relations & Media',
     isActive: true,
     accessStatus: 'approved',
+    githubUrl: 'https://github.com',
+    linkedinUrl: 'https://linkedin.com',
+    bio: 'Emerging Toastmaster preparing for Level 1 Icebreaker debut at Scaler Innovation Hall.',
     createdAt: '2026-11-19T18:40:00Z',
     updatedAt: '2026-11-19T18:40:00Z'
   },

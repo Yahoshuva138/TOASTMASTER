@@ -37,6 +37,10 @@ export interface Profile {
   isActive: boolean;
   accessStatus?: 'approved' | 'pending' | 'rejected';
   phone?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  bio?: string;
   createdAt: string;
   updatedAt: string;
 }
